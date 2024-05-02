@@ -1,3 +1,4 @@
 ## Introduction
 This is the final project for the course "Data Science 2" at St. Olaf College. The goal of this project is to create a Shiny app that is able to generate graphs and tables based on the user's input. The app is designed to be user-friendly and interactive. The app is hosted on shinyapps.io and can be accessed [here](https://jessicazhang.shinyapps.io/Shiny-final-project/).
 
+For this project, we will be looking at statistics of the WNBA and D1 Women's basketball teams. The data was collected from the NCAA website and the WNBA website. The data includes the following variables: team name, conference, win-loss record, points per game, field goal percentage, 3-point percentage, free throw percentage, rebounds per game, assists per game, steals per game, blocks per game, and turnovers per game. 
