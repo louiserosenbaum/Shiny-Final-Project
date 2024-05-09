@@ -1,0 +1,33 @@
+---
+title: "TeamAnalysis"
+sidebar: false
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r}
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(shiny)
+library(shinydashboard)
+library(shinyWidgets)
+```
+
+
+```{r}
+# Load the data
+Comparing_Teams_Sheet <- read_csv("~/Downloads/Data Science 2/Shiny_final_project/Comparing Teams - Sheet1.csv")
+View(Comparing_Teams_Sheet1)
+```
+
+```{r}
+urlnew <- "https://hoopshype.com/salaries/"
+
+salaries <- read_html(urlnew) |>
+  html_nodes(".hh-salaries-sorted") |>
+  html_text
+
+
+```
+
