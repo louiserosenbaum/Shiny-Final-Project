@@ -1,0 +1,66 @@
+---
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+```{r}
+#| include: FALSE
+
+library(tidyverse)
+library(stringr)
+library(rvest)
+library(httr)
+```
+
+```{r}
+urlnew <-"https://www.espn.com/wnba/stats/player"
+
+robotstxt::paths_allowed(urlnew)   
+
+player <- read_html(urlnew) |>
+  html_nodes(".mr7 .AnchorLink") |>
+  html_text() 
+
+points <- read_html(urlnew) |>
+  html_nodes(".Table__TD:nth-child(4)") |>
+  html_text()
+
+games_played <- read_html(urlnew) |>
+  html_nodes(".Table__Scroller .Table__TD:nth-child(2)") |>
+  html_text() 
+
+rank <- read_html(urlnew) |>
+  html_nodes(".Table--fixed-left .Table__TH:nth-child(1) div , .Table--fixed-left .Table__TD:nth-child(1)") |>
+  html_text() |>
+  tail(n=50)
+
+position <- read_html(urlnew) |>
+  html_nodes(".position") |>
+  html_text()|>
+  head(n=50)
+
+team <- read_html(urlnew) |>
+  html_nodes(".athleteCell__teamAbbrev") |>
+  html_text()|>
+  head(n=50)
+
+tibble(player, points, games_played, position, rank, team) |>
+  print(n= Inf)
+
+
+url <- "https://hoopshype.com/salaries/"
+robotstxt::paths_allowed(urlnew)  
+
+salaries <- read_html(url) |>
+  html_nodes("tbody .hh-salaries-sorted") |>
+  html_text()
+salaries
+
+```
+
+
+height
+age 
+
+
+
