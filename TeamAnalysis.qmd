@@ -67,6 +67,104 @@ nba_teams <- read_html(urlnew2122) |>
   html_nodes(".name") |>
   html_text() |>
   tail(n = 30)
+
+urlnew2021 <- "https://hoopshype.com/salaries/2020-2021/"
+
+robotstxt::paths_allowed(urlnew2021)
+
+nba_salaries2021 <- read_html(urlnew2021) |>
+  html_nodes("td:nth-child(3)") |>
+  html_text() |>
+  head(n = 30)
+
+nba_teams <- read_html(urlnew2021) |>
+  html_nodes(".name") |>
+  html_text() |>
+  tail(n = 30)
+
+urlnew1920 <- "https://hoopshype.com/salaries/2019-2020/"
+
+robotstxt::paths_allowed(urlnew1920)
+
+nba_salaries1920 <- read_html(urlnew1920) |>
+  html_nodes("td:nth-child(3)") |>
+  html_text() |>
+  head(n = 30)
+
+nba_teams <- read_html(urlnew1920) |>
+  html_nodes(".name") |>
+  html_text() |>
+  tail(n = 30)
+
+urlnew1819 <- "https://hoopshype.com/salaries/2018-2019/"
+
+robotstxt::paths_allowed(urlnew1819)
+
+nba_salaries1819 <- read_html(urlnew1819) |>
+  html_nodes("td:nth-child(3)") |>
+  html_text() |>
+  head(n = 30)
+
+nba_teams <- read_html(urlnew1819) |>
+  html_nodes(".name") |>
+  html_text() |>
+  tail(n = 30)
+
+urlnew1718 <- "https://hoopshype.com/salaries/2017-2018/"
+
+robotstxt::paths_allowed(urlnew1718)
+
+nba_salaries1718 <- read_html(urlnew1718) |>
+  html_nodes("td:nth-child(3)") |>
+  html_text() |>
+  head(n = 30)
+
+nba_teams <- read_html(urlnew1718) |>
+  html_nodes(".name") |>
+  html_text() |>
+  tail(n = 30)
+
+urlnew1617 <- "https://hoopshype.com/salaries/2016-2017/"
+
+robotstxt::paths_allowed(urlnew1617)
+
+nba_salaries1617 <- read_html(urlnew1617) |>
+  html_nodes("td:nth-child(3)") |>
+  html_text() |>
+  head(n = 30)
+
+nba_teams <- read_html(urlnew1617) |>
+  html_nodes(".name") |>
+  html_text() |>
+  tail(n = 30)
+
+urlnew1516 <- "https://hoopshype.com/salaries/2015-2016/"
+
+robotstxt::paths_allowed(urlnew1516)
+
+nba_salaries1516 <- read_html(urlnew1516) |>
+  html_nodes("td:nth-child(3)") |>
+  html_text() |>
+  head(n = 30)
+
+nba_teams <- read_html(urlnew1516) |>
+  html_nodes(".name") |>
+  html_text() |>
+  tail(n = 30)
+
+urlnew1415 <- "https://hoopshype.com/salaries/2014-2015/"
+
+robotstxt::paths_allowed(urlnew1415)
+
+nba_salaries1415 <- read_html(urlnew1415) |>
+  html_nodes("td:nth-child(3)") |>
+  html_text() |>
+  head(n = 30)
+
+nba_teams <- read_html(urlnew1415) |>
+  html_nodes(".name") |>
+  html_text() |>
+  tail(n = 30)
   
 ```
 
@@ -95,6 +193,7 @@ tibble(nba_teams, nba_salaries2324) |>
 ```
 
 
+### WNBA Salaries
 
 ```{r}
 urlnew2024 <- "https://www.spotrac.com/wnba/cap/_/year/2024/sort/cap_maximum_space"
@@ -181,30 +280,7 @@ nba_teams <- read_html(urlnew2018) |>
   html_nodes(".name") |>
   html_text()
 
-urlnew2017 <- "https://www.spotrac.com/wnba/cap/_/year/2017/sort/cap_maximum_space"
-
-robotstxt::paths_allowed(urlnew2017)
-
-wnba_salaries2017 <- read_html(urlnew2017) |>
-  html_nodes("td:nth-child(5)") |>
-  html_text()
-
-nba_teams <- read_html(urlnew2017) |>
-  html_nodes(".name") |>
-  html_text()
-
-urlnew2016 <- "https://www.spotrac.com/wnba/cap/_/year/2016/sort/cap_maximum_space"
-
-robotstxt::paths_allowed(urlnew2016)
-
-wnba_salaries2016 <- read_html(urlnew2016) |>
-  html_nodes("td:nth-child(5)") |>
-  html_text()
-
-nba_teams <- read_html(urlnew2016) |>
-  html_nodes(".name") |>
-  html_text()
-
+#2016 and 2017 contain missing values
 #only one team listed before 2016
 ```
 
@@ -218,9 +294,7 @@ urls <- c(
   "https://www.spotrac.com/wnba/cap/_/year/2021/sort/cap_maximum_space",
   "https://www.spotrac.com/wnba/cap/_/year/2020/sort/cap_maximum_space",
   "https://www.spotrac.com/wnba/cap/_/year/2019/sort/cap_maximum_space",
-  "https://www.spotrac.com/wnba/cap/_/year/2018/sort/cap_maximum_space",
-  "https://www.spotrac.com/wnba/cap/_/year/2017/sort/cap_maximum_space",
-  "https://www.spotrac.com/wnba/cap/_/year/2016/sort/cap_maximum_space"
+  "https://www.spotrac.com/wnba/cap/_/year/2018/sort/cap_maximum_space"
 )
 
 # List of years
