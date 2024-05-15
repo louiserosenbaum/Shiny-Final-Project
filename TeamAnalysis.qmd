@@ -26,304 +26,77 @@ View(Comparing_Teams_Sheet1)
 ```
 
 ```{r}
-urlnew2324 <- "https://hoopshype.com/salaries/"
+scrape_nbadata <- function(year){
+  url <-str_c("https://www.spotrac.com/nba/cap/_/year/", year, "/sort/cap_maximum_space", sep = "")
 
-robotstxt::paths_allowed(urlnew2324)
+nba <- read_html(url)
 
-nba_salaries2324 <- read_html(urlnew2324) |>
-  html_nodes(".hh-salaries-sorted") |>
-  html_text() |>
-  tail(n = 30)
+tables <- html_nodes(nba, css = "table") 
 
-nba_teams <- read_html(urlnew2324) |>
-  html_nodes(".name") |>
-  html_text() |>
-  tail(n = 30)
+tables
 
-urlnew2223 <- "https://hoopshype.com/salaries/2022-2023/"
+html_table(tables, header = TRUE, fill = TRUE)    # find the right table
 
-robotstxt::paths_allowed(urlnew2223)
+nba_data <- html_table(tables, header = TRUE, fill = TRUE)[[1]]  %>%
+  mutate(year=year) |>
+  mutate(Team = str_sub(Team, start = 1, end = 3))
+return(nba_data)
+}
 
-nba_salaries2223 <- read_html(urlnew2223) |>
-  html_nodes("td:nth-child(3)") |>
-  html_text() |>
-  head(n = 30)
+scrape_nbadata(2023)
 
-nba_teams <- read_html(urlnew2223) |>
-  html_nodes(".name") |>
-  html_text() |>
-  tail(n = 30)
+nba <- bind_rows(scrape_nbadata(2017),
+          scrape_nbadata(2018),
+          scrape_nbadata(2019),
+          scrape_nbadata(2020),
+          scrape_nbadata(2021),
+          scrape_nbadata(2022),
+          scrape_nbadata(2023)) %>%
+  mutate(WM = "M")
 
-urlnew2122 <- "https://hoopshype.com/salaries/2021-2022/"
+  #select("Rank", "Team", "Players Active", "Avg Age Team", "Total Cap All", "Cap Space All", "Active", "Dead Cap")
 
-robotstxt::paths_allowed(urlnew2122)
+#columns have some weird names so it isn't working to grab the ones that match the womens dataset to bind them together
 
-nba_salaries2122 <- read_html(urlnew2122) |>
-  html_nodes("td:nth-child(3)") |>
-  html_text() |>
-  head(n = 30)
-
-nba_teams <- read_html(urlnew2122) |>
-  html_nodes(".name") |>
-  html_text() |>
-  tail(n = 30)
-
-urlnew2021 <- "https://hoopshype.com/salaries/2020-2021/"
-
-robotstxt::paths_allowed(urlnew2021)
-
-nba_salaries2021 <- read_html(urlnew2021) |>
-  html_nodes("td:nth-child(3)") |>
-  html_text() |>
-  head(n = 30)
-
-nba_teams <- read_html(urlnew2021) |>
-  html_nodes(".name") |>
-  html_text() |>
-  tail(n = 30)
-
-urlnew1920 <- "https://hoopshype.com/salaries/2019-2020/"
-
-robotstxt::paths_allowed(urlnew1920)
-
-nba_salaries1920 <- read_html(urlnew1920) |>
-  html_nodes("td:nth-child(3)") |>
-  html_text() |>
-  head(n = 30)
-
-nba_teams <- read_html(urlnew1920) |>
-  html_nodes(".name") |>
-  html_text() |>
-  tail(n = 30)
-
-urlnew1819 <- "https://hoopshype.com/salaries/2018-2019/"
-
-robotstxt::paths_allowed(urlnew1819)
-
-nba_salaries1819 <- read_html(urlnew1819) |>
-  html_nodes("td:nth-child(3)") |>
-  html_text() |>
-  head(n = 30)
-
-nba_teams <- read_html(urlnew1819) |>
-  html_nodes(".name") |>
-  html_text() |>
-  tail(n = 30)
-
-urlnew1718 <- "https://hoopshype.com/salaries/2017-2018/"
-
-robotstxt::paths_allowed(urlnew1718)
-
-nba_salaries1718 <- read_html(urlnew1718) |>
-  html_nodes("td:nth-child(3)") |>
-  html_text() |>
-  head(n = 30)
-
-nba_teams <- read_html(urlnew1718) |>
-  html_nodes(".name") |>
-  html_text() |>
-  tail(n = 30)
-
-urlnew1617 <- "https://hoopshype.com/salaries/2016-2017/"
-
-robotstxt::paths_allowed(urlnew1617)
-
-nba_salaries1617 <- read_html(urlnew1617) |>
-  html_nodes("td:nth-child(3)") |>
-  html_text() |>
-  head(n = 30)
-
-nba_teams <- read_html(urlnew1617) |>
-  html_nodes(".name") |>
-  html_text() |>
-  tail(n = 30)
-
-urlnew1516 <- "https://hoopshype.com/salaries/2015-2016/"
-
-robotstxt::paths_allowed(urlnew1516)
-
-nba_salaries1516 <- read_html(urlnew1516) |>
-  html_nodes("td:nth-child(3)") |>
-  html_text() |>
-  head(n = 30)
-
-nba_teams <- read_html(urlnew1516) |>
-  html_nodes(".name") |>
-  html_text() |>
-  tail(n = 30)
-
-urlnew1415 <- "https://hoopshype.com/salaries/2014-2015/"
-
-robotstxt::paths_allowed(urlnew1415)
-
-nba_salaries1415 <- read_html(urlnew1415) |>
-  html_nodes("td:nth-child(3)") |>
-  html_text() |>
-  head(n = 30)
-
-nba_teams <- read_html(urlnew1415) |>
-  html_nodes(".name") |>
-  html_text() |>
-  tail(n = 30)
-  
-```
-
-```{r}
-# Clean the data
-nba_salaries2324 <- str_replace_all(nba_salaries2324, "[\n\t]", "") # remove newline and tab characters
-nba_salaries2324 <- str_replace_all(nba_salaries2324, "\\$", "") # remove dollar signs
-nba_salaries2324 <- str_replace_all(nba_salaries2324, ",", "") # remove commas
-nba_salaries2324 <- str_trim(nba_salaries2324) # remove leading and trailing whitespace
-
-# Handle cases where salaries are in millions or thousands
-nba_salaries2324 <- ifelse(str_detect(nba_salaries2324, "M"), 
-                       as.numeric(str_extract(nba_salaries2324,
-                                              "\\d+\\.?\\d*")) * 1e6,
-                       ifelse(str_detect(nba_salaries2324, "K"), 
-                              as.numeric(str_extract(nba_salaries2324,
-                                                     "\\d+\\.?\\d*")) * 1e3,
-                              as.numeric(nba_salaries2324)))
-
-nba_teams <- str_replace_all(nba_teams, "[\n\t]", "") # remove newline and tab characters
-nba_teams <- str_trim(nba_teams) # remove leading and trailing whitespace
-
-# Create a tibble and print it
-tibble(nba_teams, nba_salaries2324) |>
-  print(n = Inf)
+nba
 ```
 
 
 ### WNBA Salaries
 
 ```{r}
-urlnew2024 <- "https://www.spotrac.com/wnba/cap/_/year/2024/sort/cap_maximum_space"
+scrape_wnbadata <- function(year){
+  url <-str_c("https://www.spotrac.com/wnba/cap/_/year/", year, "/sort/cap_maximum_space", sep = "")
 
-robotstxt::paths_allowed(urlnew2024)
+wnba <- read_html(url)
 
-wnba_salaries2024 <- read_html(urlnew2024) |>
-  html_nodes("td:nth-child(5)") |>
-  html_text()
+tables <- html_nodes(wnba, css = "table") 
 
-nba_teams <- read_html(urlnew2024) |>
-  html_nodes(".link") |>
-  html_text() 
+tables
 
-urlnew2023 <- "https://www.spotrac.com/wnba/cap/_/year/2023/sort/cap_maximum_space"
+html_table(tables, header = TRUE, fill = TRUE)    # find the right table
 
-robotstxt::paths_allowed(urlnew2023)
+wnba_data <- html_table(tables, header = TRUE, fill = TRUE)[[1]] |>
+  mutate(year=year) |>
+  mutate(Team = str_sub(Team, start = 1, end = 3))
+wnba_data
+}
 
-wnba_salaries2023 <- read_html(urlnew2023) |>
-  html_nodes("td:nth-child(5)") |>
-  html_text() 
+scrape_wnbadata(2024)
 
-nba_teams <- read_html(urlnew2023) |>
-  html_nodes(".name") |>
-  html_text() 
+wnba <- bind_rows(scrape_wnbadata(2018),
+          scrape_wnbadata(2019),
+          scrape_wnbadata(2020), 
+          scrape_wnbadata(2021),
+          scrape_wnbadata(2022),
+          scrape_wnbadata(2023),
+          scrape_wnbadata(2024)) %>%
+  mutate(WM = "W")
 
-urlnew2022 <- "https://www.spotrac.com/wnba/cap/_/year/2022/sort/cap_maximum_space"
-
-robotstxt::paths_allowed(urlnew2022)
-
-wnba_salaries2022 <- read_html(urlnew2022) |>
-  html_nodes("td:nth-child(5)") |>
-  html_text()
-
-nba_teams <- read_html(urlnew2022) |>
-  html_nodes(".name") |>
-  html_text() 
-
-urlnew2021 <- "https://www.spotrac.com/wnba/cap/_/year/2021/sort/cap_maximum_space"
-
-robotstxt::paths_allowed(urlnew2021)
-
-wnba_salaries2021 <- read_html(urlnew2021) |>
-  html_nodes("td:nth-child(5)") |>
-  html_text()
-
-nba_teams <- read_html(urlnew2021) |>
-  html_nodes(".name") |>
-  html_text() 
-
-urlnew2020 <- "https://www.spotrac.com/wnba/cap/_/year/2020/sort/cap_maximum_space"
-
-robotstxt::paths_allowed(urlnew2020)
-
-wnba_salaries2020 <- read_html(urlnew2020) |>
-  html_nodes("td:nth-child(5)") |>
-  html_text()
-
-nba_teams <- read_html(urlnew2020) |>
-  html_nodes(".name") |>
-  html_text() 
-
-urlnew2019 <- "https://www.spotrac.com/wnba/cap/_/year/2019/sort/cap_maximum_space"
-
-robotstxt::paths_allowed(urlnew2019)
-
-wnba_salaries2019 <- read_html(urlnew2019) |>
-  html_nodes("td:nth-child(5)") |>
-  html_text()
-
-nba_teams <- read_html(urlnew2019) |>
-  html_nodes(".name") |>
-  html_text()
-
-urlnew2018 <- "https://www.spotrac.com/wnba/cap/_/year/2018/sort/cap_maximum_space"
-
-robotstxt::paths_allowed(urlnew2018)
-
-wnba_salaries2018 <- read_html(urlnew2018) |>
-  html_nodes("td:nth-child(5)") |>
-  html_text()
-
-nba_teams <- read_html(urlnew2018) |>
-  html_nodes(".name") |>
-  html_text()
-
-#2016 and 2017 contain missing values
-#only one team listed before 2016
+wnba
 ```
 
 ```{r}
-#Trying to combine WNBA data
-# List of URLs
-urls <- c(
-  "https://www.spotrac.com/wnba/cap/_/year/2024/sort/cap_maximum_space",
-  "https://www.spotrac.com/wnba/cap/_/year/2023/sort/cap_maximum_space",
-  "https://www.spotrac.com/wnba/cap/_/year/2022/sort/cap_maximum_space",
-  "https://www.spotrac.com/wnba/cap/_/year/2021/sort/cap_maximum_space",
-  "https://www.spotrac.com/wnba/cap/_/year/2020/sort/cap_maximum_space",
-  "https://www.spotrac.com/wnba/cap/_/year/2019/sort/cap_maximum_space",
-  "https://www.spotrac.com/wnba/cap/_/year/2018/sort/cap_maximum_space"
-)
-
-# List of years
-years <- 2024:2016
-
-# Function to scrape data for a specific year
-scrape_data <- function(url, year) {
-  robotstxt::paths_allowed(url)
-  
-  salaries <- read_html(url) |>
-    html_nodes("td:nth-child(5)") |>
-    html_text()
-  
-  teams <- read_html(url) |>
-    html_nodes(".name") |>
-    html_text()
-  
-  df <- data.frame(Team = teams, Salary = salaries)
-  setNames(df, c("Team", paste0("Salary_", year)))
-}
-
-# Scrape data for all years
-data_list <- map2(urls, years, scrape_data)
-
-# Combine all data frames by team
-combined_data <- reduce(data_list, function(df1, df2) {
-  merge(df1, df2, by = "Team", all = TRUE)
-})
-
-combined_data
+all_ba <- wnba %>% bind_rows(nba)
 ```
 
