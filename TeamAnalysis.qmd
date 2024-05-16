@@ -45,18 +45,28 @@ return(nba_data)
 
 scrape_nbadata(2023)
 
+# Scrape data for all years
 nba <- bind_rows(scrape_nbadata(2017),
           scrape_nbadata(2018),
           scrape_nbadata(2019),
           scrape_nbadata(2020),
           scrape_nbadata(2021),
           scrape_nbadata(2022),
-          scrape_nbadata(2023)) %>%
+          scrape_nbadata(2023))
+
+# Rename columns
+colnames(nba)[1] <- "rank"
+colnames(nba)[2] <- "team"
+colnames(nba)[4] <- "players_active"
+colnames(nba)[5] <- "avg_age_team"
+colnames(nba)[6] <- "total_cap_all"
+colnames(nba)[7] <- "cap_space_all"
+colnames(nba)[9] <- "active"
+
+# Select columns and add new column
+nba <- nba |>
+  select (rank, team, players_active, avg_age_team, total_cap_all, cap_space_all, active) |>
   mutate(WM = "M")
-
-  #select("Rank", "Team", "Players Active", "Avg Age Team", "Total Cap All", "Cap Space All", "Active", "Dead Cap")
-
-#columns have some weird names so it isn't working to grab the ones that match the womens dataset to bind them together
 
 nba
 ```
@@ -84,19 +94,41 @@ wnba_data
 
 scrape_wnbadata(2024)
 
-wnba <- bind_rows(scrape_wnbadata(2018),
-          scrape_wnbadata(2019),
-          scrape_wnbadata(2020), 
-          scrape_wnbadata(2021),
-          scrape_wnbadata(2022),
-          scrape_wnbadata(2023),
-          scrape_wnbadata(2024)) %>%
+# Scrape data for all years
+wnba <- bind_rows(
+  scrape_wnbadata(2018),
+  scrape_wnbadata(2019),
+  scrape_wnbadata(2020), 
+  scrape_wnbadata(2021),
+  scrape_wnbadata(2022),
+  scrape_wnbadata(2023),
+  scrape_wnbadata(2024))
+
+# Rename columns
+colnames(wnba)[1] <- "rank"
+colnames(wnba)[2] <- "team"
+colnames(wnba)[3] <- "players_active"
+colnames(wnba)[4] <- "avg_age_team"
+colnames(wnba)[5] <- "total_cap_all"
+colnames(wnba)[6] <- "cap_space_all"
+colnames(wnba)[7] <- "active"
+
+# Select columns and add new column
+wnba <- wnba |>
+  select(rank, team, players_active, avg_age_team, total_cap_all, cap_space_all, active) |>
   mutate(WM = "W")
 
 wnba
 ```
 
 ```{r}
-all_ba <- wnba %>% bind_rows(nba)
+# For NBA data
+nba$players_active <- as.character(nba$players_active)
+
+# For WNBA data
+wnba$players_active <- as.character(wnba$players_active)
+
+# Now bind the rows
+all_basketball <- bind_rows(wnba, nba)
 ```
 
