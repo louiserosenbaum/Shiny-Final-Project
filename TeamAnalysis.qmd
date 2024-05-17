@@ -217,9 +217,16 @@ stadiums <- stadiums %>%
   group_by(lat, lon) %>%
   summarise(team = paste(team, collapse = "<br>"))
 
+# Create a basketball icon
+basketball_icon <- makeIcon(
+  iconUrl = "https://emojiguide.org/images/emoji/6/jvgrthwxjlu6.png", # URL to the basketball emoji
+  iconWidth = 28,
+  iconHeight = 28
+)
+
 # Create a leaflet map
 leaflet(stadiums) %>%
   addTiles() %>%
-  addMarkers(~lon, ~lat, popup = ~team)
+  addMarkers(~lon, ~lat, icon = basketball_icon, popup = ~team)
 ```
 
