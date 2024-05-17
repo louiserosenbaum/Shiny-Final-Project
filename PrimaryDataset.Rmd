@@ -1,15 +1,17 @@
 ---
 output: html_document
+runtime: shiny
 editor_options: 
   chunk_output_type: console
 ---
 ```{r}
 #| include: FALSE
-
+knitr::opts_chunk$set(echo = TRUE) 
 library(tidyverse)
 library(stringr)
 library(rvest)
 library(httr)
+library(shiny)
 ```
 
 ```{r}
@@ -228,27 +230,52 @@ primary_data1 |>
   ggplot(aes(x= age)) +
   geom_boxplot()
 
-primary_data1 |>
-  count(team)
+primary_data1 <- primary_data1 |>
+  mutate(feet_in_inches= feet*12, inches_in_feet= inches/12) |>
+  mutate(height_in = feet_in_inches+inches, 
+         height_ft= feet+inches_in_feet) |>
+  select(-feet, -inches, -feet_in_inches, -inches_in_feet)
 
-
-urlsal <- "https://hoopshype.com/salaries/2020-2021/"
-robotstxt::paths_allowed(urlsal)  
-sal <- read_html(urlsal) |>
-  html_nodes("td:nth-child(3)") |>
-  html_text()
-sal
-
-agemin <- read_html(urlmin) |>
-  html_nodes(".Table__TD:nth-child(3) .inline") |>
-  html_text()
-heightmin <- read_html(urlmin) |>
-  html_nodes(".Table__TD:nth-child(4) .inline") |>
-  html_text()
 ```
 
 
 height
 age 
 
+```{r primary_data1, echo= FALSE}
+
+inputPanel(
+      selectInput(inputId = "categ",
+                  label = h3("Boxplot categories"),
+                  choices = c("Games Played" = "games_played", 
+                              "Position" = "position", 
+                              "Team" = "team"),
+                  selected = "Team")
+)
+
+renderPlot({
+ primary_data1 |> 
+    select(input$categ, "age") |>
+    ggplot(aes(x=.data[[input$categ]], y= age)) +
+    geom_boxplot() +
+    coord_flip()
+  }) 
+
+inputPanel(
+      selectInput(inputId = "categheight",
+                  label = h3("Boxplot categories"),
+                  choices = c("Games Played" = "games_played", 
+                              "Position" = "position", 
+                              "Team" = "team"),
+                  selected = "Team")
+)
+
+renderPlot({
+ primary_data1 |> 
+    select(input$categheight, "height_in") |>
+    ggplot(aes(x=.data[[input$categheight]], y= height_in)) +
+    geom_boxplot() +
+    coord_flip()
+  }) 
+```
 

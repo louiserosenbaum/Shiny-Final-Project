@@ -1,5 +1,6 @@
 ```{r}
 library(shiny)
+knitr::opts_chunk$set(echo = TRUE)  
 
 # Define UI for application
 ui <- fluidPage(
@@ -29,5 +30,269 @@ server <- function(input, output) {
 
 # Run the application 
 shinyApp(ui = ui, server = server)
+```
+
+```{r, echo= FALSE, output= FALSE, include= FALSE}
+library(tidyverse)
+library(stringr)
+library(rvest)
+library(httr)
+library(shiny)
+urlnew <-"https://www.espn.com/wnba/stats/player"
+
+robotstxt::paths_allowed(urlnew)   
+
+player <- read_html(urlnew) |>
+  html_nodes(".mr7 .AnchorLink") |>
+  html_text() 
+
+points <- read_html(urlnew) |>
+  html_nodes(".Table__TD:nth-child(4)") |>
+  html_text()
+
+games_played <- read_html(urlnew) |>
+  html_nodes(".Table__Scroller .Table__TD:nth-child(2)") |>
+  html_text() 
+
+rank <- read_html(urlnew) |>
+  html_nodes(".Table--fixed-left .Table__TH:nth-child(1) div , .Table--fixed-left .Table__TD:nth-child(1)") |>
+  html_text() |>
+  tail(n=50)
+
+position <- read_html(urlnew) |>
+  html_nodes(".position") |>
+  html_text()|>
+  head(n=50)
+
+team <- read_html(urlnew) |>
+  html_nodes(".athleteCell__teamAbbrev") |>
+  html_text()|>
+  head(n=50)
+
+primarydata <- tibble(player, points, games_played, position, rank, team) |>
+  print(n= Inf)
+
+
+
+
+url <- "https://www.espn.com/wnba/team/roster/_/name/chi/chicago-sky"
+robotstxt::paths_allowed(url)  
+
+namechi <- read_html(url) |>
+  html_nodes(".inline .AnchorLink") |>
+  html_text()
+agechi <- read_html(url) |>
+  html_nodes(".Table__TD:nth-child(3) .inline") |>
+  html_text()
+heightchi <- read_html(url) |>
+  html_nodes(".Table__TD:nth-child(4) .inline") |>
+  html_text()
+
+
+urlatl <- "https://www.espn.com/wnba/team/roster/_/name/atl/atlanta-dream"
+robotstxt::paths_allowed(urlatl)  
+nameatl <- read_html(urlatl) |>
+  html_nodes(".inline .AnchorLink") |>
+  html_text()
+ageatl <- read_html(urlatl) |>
+  html_nodes(".Table__TD:nth-child(3) .inline") |>
+  html_text()
+heightatl <- read_html(urlatl) |>
+  html_nodes(".Table__TD:nth-child(4) .inline") |>
+  html_text()
+
+
+urlconn <- "https://www.espn.com/wnba/team/roster/_/name/conn/connecticut-sun"
+robotstxt::paths_allowed(urlconn)  
+nameconn <- read_html(urlconn) |>
+  html_nodes(".inline .AnchorLink") |>
+  html_text()
+ageconn <- read_html(urlconn) |>
+  html_nodes(".Table__TD:nth-child(3) .inline") |>
+  html_text()
+heightconn <- read_html(urlconn) |>
+  html_nodes(".Table__TD:nth-child(4) .inline") |>
+  html_text()
+
+
+urldal <- "https://www.espn.com/wnba/team/roster/_/name/dal/dallas-wings"
+robotstxt::paths_allowed(urldal)  
+namedal <- read_html(urldal) |>
+  html_nodes(".inline .AnchorLink") |>
+  html_text()
+agedal <- read_html(urldal) |>
+  html_nodes(".Table__TD:nth-child(3) .inline") |>
+  html_text()
+heightdal <- read_html(urldal) |>
+  html_nodes(".Table__TD:nth-child(4) .inline") |>
+  html_text()
+
+urlind <- "https://www.espn.com/wnba/team/roster/_/name/ind/indiana-fever"
+robotstxt::paths_allowed(urlind)  
+nameind <- read_html(urlind) |>
+  html_nodes(".inline .AnchorLink") |>
+  html_text()
+ageind <- read_html(urlind) |>
+  html_nodes(".Table__TD:nth-child(3) .inline") |>
+  html_text()
+heightind <- read_html(urlind) |>
+  html_nodes(".Table__TD:nth-child(4) .inline") |>
+  html_text()
+
+urllv <- "https://www.espn.com/wnba/team/roster/_/name/lv/las-vegas-aces"
+robotstxt::paths_allowed(urllv)  
+namelv <- read_html(urllv) |>
+  html_nodes(".inline .AnchorLink") |>
+  html_text()
+agelv <- read_html(urllv) |>
+  html_nodes(".Table__TD:nth-child(3) .inline") |>
+  html_text()
+heightlv <- read_html(urllv) |>
+  html_nodes(".Table__TD:nth-child(4) .inline") |>
+  html_text()
+
+urlla <- "https://www.espn.com/wnba/team/roster/_/name/la/los-angeles-sparks"
+robotstxt::paths_allowed(urlla)  
+namela <- read_html(urlla) |>
+  html_nodes(".inline .AnchorLink") |>
+  html_text()
+agela <- read_html(urlla) |>
+  html_nodes(".Table__TD:nth-child(3) .inline") |>
+  html_text()
+heightla <- read_html(urlla) |>
+  html_nodes(".Table__TD:nth-child(4) .inline") |>
+  html_text()
+
+urlmin <- "https://www.espn.com/wnba/team/roster/_/name/min/minnesota-lynx"
+robotstxt::paths_allowed(urlmin)  
+namemin <- read_html(urlmin) |>
+  html_nodes(".inline .AnchorLink") |>
+  html_text()
+agemin <- read_html(urlmin) |>
+  html_nodes(".Table__TD:nth-child(3) .inline") |>
+  html_text()
+heightmin <- read_html(urlmin) |>
+  html_nodes(".Table__TD:nth-child(4) .inline") |>
+  html_text()
+
+urlny <- "https://www.espn.com/wnba/team/roster/_/name/ny/new-york-liberty"
+robotstxt::paths_allowed(urlny)  
+nameny <- read_html(urlny) |>
+  html_nodes(".inline .AnchorLink") |>
+  html_text()
+ageny <- read_html(urlny) |>
+  html_nodes(".Table__TD:nth-child(3) .inline") |>
+  html_text()
+heightny <- read_html(urlny) |>
+  html_nodes(".Table__TD:nth-child(4) .inline") |>
+  html_text()
+
+urlphx <- "https://www.espn.com/wnba/team/roster/_/name/phx/phoenix-mercury"
+robotstxt::paths_allowed(urlphx)  
+namephx <- read_html(urlphx) |>
+  html_nodes(".inline .AnchorLink") |>
+  html_text()
+agephx <- read_html(urlphx) |>
+  html_nodes(".Table__TD:nth-child(3) .inline") |>
+  html_text()
+heightphx <- read_html(urlphx) |>
+  html_nodes(".Table__TD:nth-child(4) .inline") |>
+  html_text()
+
+urlsea <- "https://www.espn.com/wnba/team/roster/_/name/sea/seattle-storm"
+robotstxt::paths_allowed(urlsea)  
+namesea <- read_html(urlsea) |>
+  html_nodes(".inline .AnchorLink") |>
+  html_text()
+agesea <- read_html(urlsea) |>
+  html_nodes(".Table__TD:nth-child(3) .inline") |>
+  html_text()
+heightsea <- read_html(urlsea) |>
+  html_nodes(".Table__TD:nth-child(4) .inline") |>
+  html_text()
+
+urlwsh <- "https://www.espn.com/wnba/team/roster/_/name/wsh/washington-mystics"
+robotstxt::paths_allowed(urlwsh)  
+namewsh <- read_html(urlwsh) |>
+  html_nodes(".inline .AnchorLink") |>
+  html_text()
+agewsh <- read_html(urlwsh) |>
+  html_nodes(".Table__TD:nth-child(3) .inline") |>
+  html_text()
+heightwsh <- read_html(urlwsh) |>
+  html_nodes(".Table__TD:nth-child(4) .inline") |>
+  html_text()
+nameconn <- append(nameconn, "Tiffany Hayes")
+ageconn <- append(ageconn, 33)
+heightconn <- append(heightconn, "5' 10\"")
+player <- c(nameatl,namechi,nameconn,namedal,nameind,namelv,namela,namemin,nameny,namephx, namesea,namewsh)
+age <- c(ageatl,agechi,ageconn,agedal,ageind,agelv,agela,agemin,ageny,agephx, agesea,agewsh)
+height <-c(heightatl,heightchi,heightconn,heightdal,heightind,heightlv,heightla,heightmin,heightny,heightphx, heightsea,heightwsh)
+
+tibble(player,age,height) |>
+  print(n=Inf) 
+
+dataage <- tibble(player,age,height) |>
+  filter(player!="Desi-Rae Young") |>
+  mutate(age=(as.double(age)-1)) |>
+  print(n=Inf) 
+
+primary_data1 <- left_join(primarydata, dataage, 
+                           by = join_by(player== player)) |>
+  mutate(height= str_replace(height, '"', "")) |>
+  mutate(height= str_replace(height, "'", "")) |>
+  separate(height, c("feet", "inches"), " ") |>
+  mutate(feet= as.double(feet), inches= as.double(inches)) |>
+  print(n=Inf) 
+
+primary_data1|>
+  ggplot(aes(x= age, y= team)) +
+  geom_boxplot()
+
+primary_data1 |>
+  ggplot(aes(x= age)) +
+  geom_boxplot()
+
+primary_data1 <- primary_data1 |>
+  mutate(feet_in_inches= feet*12, inches_in_feet= inches/12) |>
+  mutate(height_in = feet_in_inches+inches, 
+         height_ft= feet+inches_in_feet) |>
+  select(-feet, -inches, -feet_in_inches, -inches_in_feet)
+```
+
+```{r, echo= FALSE}
+inputPanel(
+      selectInput(inputId = "categ",
+                  label = h3("Boxplot categories"),
+                  choices = c("Games Played" = "games_played", 
+                              "Position" = "position", 
+                              "Team" = "team"),
+                  selected = "Team")
+)
+
+renderPlot({
+ primary_data1 |> 
+    select(input$categ, "age") |>
+    ggplot(aes(x=.data[[input$categ]], y= age)) +
+    geom_boxplot() +
+    coord_flip()
+  }) 
+
+inputPanel(
+      selectInput(inputId = "categheight",
+                  label = h3("Boxplot categories"),
+                  choices = c("Games Played" = "games_played", 
+                              "Position" = "position", 
+                              "Team" = "team"),
+                  selected = "Team")
+)
+
+renderPlot({
+ primary_data1 |> 
+    select(input$categheight, "height_in") |>
+    ggplot(aes(x=.data[[input$categheight]], y= height_in)) +
+    geom_boxplot() +
+    coord_flip()
+  }) 
 ```
 
