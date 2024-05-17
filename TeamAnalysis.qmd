@@ -1,3 +1,6 @@
+.git/rebase-merge
+
+
 ---
 title: "TeamAnalysis"
 sidebar: false
@@ -18,29 +21,41 @@ library(httr)
 library(purrr)
 ```
 
+### NBA Data
 
 ```{r}
-# Load the data
-Comparing_Teams_Sheet <- read_csv("~/Downloads/Data Science 2/Shiny_final_project/Comparing Teams - Sheet1.csv")
-View(Comparing_Teams_Sheet1)
-```
+scrape_nbadata <- function(start_year){
+  url <-str_c("https://www.spotrac.com/nba/cap/_/year/", start_year, "/sort/cap_maximum_space", sep = "")
 
-```{r}
-scrape_nbadata <- function(year){
-  url <-str_c("https://www.spotrac.com/nba/cap/_/year/", year, "/sort/cap_maximum_space", sep = "")
+  nba <- read_html(url)
 
-nba <- read_html(url)
+  tables <- html_nodes(nba, css = "table") 
 
-tables <- html_nodes(nba, css = "table") 
+  nba_data <- html_table(tables, header = TRUE, fill = TRUE)[[1]] 
 
-tables
+  # Initialize year column
+  nba_data$year <- NA
 
-html_table(tables, header = TRUE, fill = TRUE)    # find the right table
+  # Initialize year and counter
+  year <- start_year
+  counter <- 0
 
-nba_data <- html_table(tables, header = TRUE, fill = TRUE)[[1]]  %>%
-  mutate(year=year) |>
-  mutate(Team = str_sub(Team, start = 1, end = 3))
-return(nba_data)
+  # Loop over rows
+  for(i in seq_len(nrow(nba_data))) {
+    # If the next rank is 1 and is not NA, increment the counter
+    if(i < nrow(nba_data) && !is.na(nba_data$Rank[i+1]) && nba_data$Rank[i+1] == 1) {
+      counter <- counter + 1
+    }
+    # Calculate the year based on the counter
+    nba_data$year[i] <- start_year + counter
+  }
+
+  # Remove rows with "Totals" or "Averages"
+  nba_data <- nba_data[!rowSums(sapply(nba_data, function(x) grepl("Totals|Averages", x))), ]
+
+  nba_data <- nba_data %>%
+    mutate(Team = str_sub(Team, start = 1, end = 3))
+  return(nba_data)
 }
 
 scrape_nbadata(2023)
@@ -65,44 +80,80 @@ colnames(nba)[9] <- "active"
 
 # Select columns and add new column
 nba <- nba |>
-  select (rank, team, players_active, avg_age_team, total_cap_all, cap_space_all, active) |>
+  select (year, rank, team, players_active, avg_age_team, total_cap_all, cap_space_all, active) |>
   mutate(WM = "M")
 
 nba
 ```
 
+```{r}
+# Create a data frame with team abbreviations, full names, and cities
+nba_teams <- tibble(
+  team = c("BOS", "BKN", "NYK", "PHI", "TOR", "CHI", "CLE", "DET", "IND", "MIL", "ATL", "CHA", "MIA", "ORL", "WAS", "DEN", "MIN", "OKC", "POR", "UTA", "GSW", "LAC", "LAL", "PHX", "SAC", "DAL", "HOU", "MEM", "NOP", "SAS"),
+  team_name = c("Boston Celtics", "Brooklyn Nets", "New York Knicks", "Philadelphia 76ers", "Toronto Raptors", "Chicago Bulls", "Cleveland Cavaliers", "Detroit Pistons", "Indiana Pacers", "Milwaukee Bucks", "Atlanta Hawks", "Charlotte Hornets", "Miami Heat", "Orlando Magic", "Washington Wizards", "Denver Nuggets", "Minnesota Timberwolves", "Oklahoma City Thunder", "Portland Trail Blazers", "Utah Jazz", "Golden State Warriors", "LA Clippers", "Los Angeles Lakers", "Phoenix Suns", "Sacramento Kings", "Dallas Mavericks", "Houston Rockets", "Memphis Grizzlies", "New Orleans Pelicans", "San Antonio Spurs"),
+  city = c("Boston", "Brooklyn", "New York", "Philadelphia", "Toronto", "Chicago", "Cleveland", "Detroit", "Indianapolis", "Milwaukee", "Atlanta", "Charlotte", "Miami", "Orlando", "Washington", "Denver", "Minneapolis", "Oklahoma City", "Portland", "Salt Lake City", "San Francisco", "Los Angeles", "Los Angeles", "Phoenix", "Sacramento", "Dallas", "Houston", "Memphis", "New Orleans", "San Antonio")
+)
 
-### WNBA Salaries
+# Join NBA data with team names and cities
+nba <- nba %>%
+  left_join(nba_teams, by = "team")
+```
+
+
+### WNBA Data
 
 ```{r}
-scrape_wnbadata <- function(year){
-  url <-str_c("https://www.spotrac.com/wnba/cap/_/year/", year, "/sort/cap_maximum_space", sep = "")
+scrape_wnbadata <- function(start_year){
+  url <-str_c("https://www.spotrac.com/wnba/cap/_/year/", start_year, "/sort/cap_maximum_space", sep = "")
 
-wnba <- read_html(url)
+  wnba <- read_html(url)
 
-tables <- html_nodes(wnba, css = "table") 
+  tables <- html_nodes(wnba, css = "table") 
 
-tables
+  wnba_data <- html_table(tables, header = TRUE, fill = TRUE)[[1]] 
 
-html_table(tables, header = TRUE, fill = TRUE)    # find the right table
+  # Initialize year column
+  wnba_data$year <- NA
 
-wnba_data <- html_table(tables, header = TRUE, fill = TRUE)[[1]] |>
-  mutate(year=year) |>
-  mutate(Team = str_sub(Team, start = 1, end = 3))
-wnba_data
+  # Initialize year and counter
+  year <- start_year
+  counter <- 0
+
+  # Loop over rows
+  for(i in seq_len(nrow(wnba_data))) {
+    # If the next rank is 1 and is not NA, increment the counter
+    if(i < nrow(wnba_data) && !is.na(wnba_data$Rank[i+1]) && wnba_data$Rank[i+1] == 1) {
+      counter <- counter + 1
+    }
+    # Calculate the year based on the counter
+    wnba_data$year[i] <- start_year + counter
+  }
+
+  # Remove rows with "Totals" or "Averages"
+  wnba_data <- wnba_data[!rowSums(sapply(wnba_data, function(x) grepl("Totals|Averages", x))), ]
+
+  wnba_data <- wnba_data %>%
+    mutate(Team = str_sub(Team, start = 1, end = 3)) %>%
+    mutate(Team = case_when(
+      Team == "NY\n" ~ "NYL",
+      Team == "LA\n" ~ "LAX",
+      Team == "LV\n" ~ "LVA",
+      TRUE ~ Team
+    ))
+
+  return(wnba_data)
 }
 
 scrape_wnbadata(2024)
 
 # Scrape data for all years
-wnba <- bind_rows(
-  scrape_wnbadata(2018),
-  scrape_wnbadata(2019),
-  scrape_wnbadata(2020), 
-  scrape_wnbadata(2021),
-  scrape_wnbadata(2022),
-  scrape_wnbadata(2023),
-  scrape_wnbadata(2024))
+wnba <- bind_rows(scrape_wnbadata(2018),
+          scrape_wnbadata(2019),
+          scrape_wnbadata(2020),
+          scrape_wnbadata(2021),
+          scrape_wnbadata(2022),
+          scrape_wnbadata(2023),
+          scrape_wnbadata(2024))
 
 # Rename columns
 colnames(wnba)[1] <- "rank"
@@ -115,20 +166,60 @@ colnames(wnba)[7] <- "active"
 
 # Select columns and add new column
 wnba <- wnba |>
-  select(rank, team, players_active, avg_age_team, total_cap_all, cap_space_all, active) |>
+  select(year, rank, team, players_active, avg_age_team, total_cap_all, cap_space_all, active) |>
   mutate(WM = "W")
 
 wnba
 ```
 
 ```{r}
+# Create a data frame with team abbreviations, full names, and cities
+wnba_teams <- tibble(
+  team = c("ATL", "CHI", "CON", "IND", "NYL", "WAS", "DAL", "LVA", "LAX", "MIN", "PHX", "SEA"),
+  team_name = c("Atlanta Dream", "Chicago Sky", "Connecticut Sun", "Indiana Fever", "New York Liberty", "Washington Mystics", "Dallas Wings", "Las Vegas Aces", "Los Angeles Sparks", "Minnesota Lynx", "Phoenix Mercury", "Seattle Storm"),
+  city = c("Atlanta", "Chicago", "Uncasville", "Indianapolis", "New York", "Washington", "Dallas", "Las Vegas", "Los Angeles", "Minneapolis", "Phoenix", "Seattle")
+)
+
+# Join WNBA data with team names and cities
+wnba <- wnba %>%
+  left_join(wnba_teams, by = "team")
+```
+
+### Combined data
+
+```{r}
 # For NBA data
 nba$players_active <- as.character(nba$players_active)
+
+nba$year <- nba$year + 1
 
 # For WNBA data
 wnba$players_active <- as.character(wnba$players_active)
 
 # Now bind the rows
 all_basketball <- bind_rows(wnba, nba)
+```
+
+### Generating Map 
+```{r}
+library(leaflet)
+library(maps)
+
+# Create a data frame with the latitude and longitude for each stadium
+stadiums <- data.frame(
+  team = c("Atlanta Hawks", "Boston Celtics", "Brooklyn Nets", "Charlotte Hornets", "Chicago Bulls", "Cleveland Cavaliers", "Dallas Mavericks", "Denver Nuggets", "Detroit Pistons", "Golden State Warriors", "Houston Rockets", "Indiana Pacers", "Los Angeles Clippers", "Los Angeles Lakers", "Memphis Grizzlies", "Miami Heat", "Milwaukee Bucks", "Minnesota Timberwolves", "New Orleans Pelicans", "New York Knicks", "Oklahoma City Thunder", "Orlando Magic", "Philadelphia 76ers", "Phoenix Suns", "Portland Trail Blazers", "Sacramento Kings", "San Antonio Spurs", "Toronto Raptors", "Utah Jazz", "Washington Wizards", "Atlanta Dream", "Chicago Sky", "Connecticut Sun", "Dallas Wings", "Indiana Fever", "Las Vegas Aces", "Los Angeles Sparks", "Minnesota Lynx", "New York Liberty", "Phoenix Mercury", "Seattle Storm", "Washington Mystics"),
+  lat = c(33.7573, 42.3662, 40.6826, 35.2251, 41.8807, 41.4964, 32.7905, 39.7487, 42.3410, 37.7680, 29.7508, 39.7640, 34.0430, 34.0430, 35.1382, 25.7814, 43.0450, 44.9795, 29.9490, 40.7505, 35.4634, 28.5392, 39.9012, 33.4456, 45.5316, 38.5805, 29.4269, 43.6435, 40.7683, 38.8981, 33.6451, 41.8538, 41.4896, 32.7291, 39.7640, 36.0905, 34.0430, 44.9795, 40.6826, 33.4456, 47.6222, 38.8684),
+  lon = c(-84.3963, -71.0621, -73.9754, -80.8392, -87.6742, -81.6882, -96.8103, -105.0077, -83.0551, -122.3877, -95.3621, -86.1555, -118.2673, -118.2673, -90.0505, -80.1870, -87.9170, -93.2760, -90.0812, -73.9934, -97.5151, -81.3839, -75.1720, -112.0712, -122.6668, -121.4997, -98.4375, -79.3791, -111.9011, -77.0209, -84.4585, -87.6195, -72.0863, -97.1125, -86.1555, -115.1750, -118.2673, -93.2760, -73.9754, -112.0712, -122.3545, -76.9930)
+)
+
+# Group teams that share the same stadium together
+stadiums <- stadiums %>%
+  group_by(lat, lon) %>%
+  summarise(team = paste(team, collapse = "<br>"))
+
+# Create a leaflet map
+leaflet(stadiums) %>%
+  addTiles() %>%
+  addMarkers(~lon, ~lat, popup = ~team)
 ```
 
