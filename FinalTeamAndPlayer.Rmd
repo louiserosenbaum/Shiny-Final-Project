@@ -1,3 +1,10 @@
+---
+output: html_document
+runtime: shiny
+editor_options: 
+  chunk_output_type: console
+---
+
 ```{r}
 library(shiny)
 knitr::opts_chunk$set(echo = TRUE)  
