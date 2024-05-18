@@ -413,6 +413,9 @@ strong("Key: C= Center
   F= Forward
   G= Gaurd")
 
+p("One relationship that was interesting was that players who are in the forward position tend to be the youngest. There were no other clear relationships between age/height and stats.")
+
+
 ```
 
 
@@ -444,11 +447,6 @@ renderPlot({
     labs(title= "How does height affect player stats?", y= "Height (in)", 
          x="Selected Stat")
   }) 
-
-```
-
-```{r}
-p("One relationship that was interesting was that players who are in the forward position tend to be the youngest. There were no other clear relationships between age/height and stats.")
 
 ```
 
@@ -502,6 +500,8 @@ inputPanel(
 )
 
 strong("We also hoped to examine some team statistics as they evolve through the years. We hope to answer the questions: What teams did the best each year? By what variable? How have teams improved throughout the years?")
+
+p("One interesting relationship we found in this section is that the number of losses and wins in 2020 seemed to dropped. This would make sense because there were less games, but interestingly this isn't the case for all teams, for example the Los Vegas Aces.")
 ```
 
 Column
@@ -537,10 +537,6 @@ renderPlot({
 
 Column
 -------------------------
-
-```{r}
-p("One interesting relationship we found in this section is that the number of losses and wins in 2020 seemed to dropped. This would make sense because there were less games, but interestingly this isn't the case for all teams, for example the Los Vegas Aces.")
-```
 
 
 How does the NBA differ from the WNBA?
@@ -835,30 +831,31 @@ Conclusion
 ==========================
 Our final project, titled "WNBA and NBA Final," provided an in-depth analysis of professional basketball statistics, focusing on comparing the WNBA and NBA. Utilizing data scraped from various sources such as ESPN, HoopsHype, and Spotrac, we gathered comprehensive datasets for both leagues spanning multiple years. This allowed us to explore various statistical metrics, including player demographics, team performance, and financial expenditures.
 
-Key Insights and Findings
+#### Key Insights and Findings
 Player Demographics:
 
-We examined the demographics of WNBA players, focusing on age, height, and position. Our analysis revealed that younger players often occupy forward positions, while no significant relationships were found between age, height, and other statistics.
++ We examined the demographics of WNBA players, focusing on age, height, and position. Our analysis revealed that younger players often occupy forward positions, while no significant relationships were found between age, height, and other statistics.
 The interactive dashboard enabled users to filter data by year and various statistical metrics, providing a clear visual representation of the relationships between these demographics and player performance.
 Team Performance:
 
-Our analysis of team statistics over time showed fluctuations in team performance, particularly in the number of wins and losses. Notably, the 2020 season saw a significant drop in the number of games due to external factors, impacting team performance metrics.
++ Our analysis of team statistics over time showed fluctuations in team performance, particularly in the number of wins and losses. Notably, the 2020 season saw a significant drop in the number of games due to external factors, impacting team performance metrics.
 The interactive plots allowed users to explore how different teams performed each year, highlighting trends and changes in performance over time.
 
 Comparison Between WNBA and NBA:
-By comparing the WNBA and NBA data, we uncovered key differences and similarities between the leagues. For instance, the NBA generally has higher financial expenditures and a larger number of active players due to its longer season and greater commercial reach.
-Our analysis highlighted the differences in playing style and strategic focus between the two leagues, emphasizing the WNBA's emphasis on teamwork and fundamentals compared to the NBA's fast-paced, star-driven gameplay.
++ By comparing the WNBA and NBA data, we uncovered key differences and similarities between the leagues. For instance, the NBA generally has higher financial expenditures and a larger number of active players due to its longer season and greater commercial reach.
+
++ Our analysis highlighted the differences in playing style and strategic focus between the two leagues, emphasizing the WNBA's emphasis on teamwork and fundamentals compared to the NBA's fast-paced, star-driven gameplay.
 
 Geographical Distribution:
-Using Leaflet maps, we visualized the geographical distribution of WNBA and NBA teams. This provided a spatial perspective on where teams are located across the United States, offering insights into regional representation in professional basketball.
++ Using Leaflet maps, we visualized the geographical distribution of WNBA and NBA teams. This provided a spatial perspective on where teams are located across the United States, offering insights into regional representation in professional basketball.
 
-Future Directions
+#### Future Directions
 This project serves as a foundation for further exploration into the dynamics of professional basketball. Potential future directions could include:
-Analyzing the impact of external factors such as injuries, trades, and draft picks on team performance and player statistics.
-Expanding the scope to include international leagues and their comparison with the WNBA and NBA.
-Incorporating advanced statistical models and machine learning techniques to predict player and team performance based on historical data.
++Analyzing the impact of external factors such as injuries, trades, and draft picks on team performance and player statistics.
++Expanding the scope to include international leagues and their comparison with the WNBA and NBA.
++Incorporating advanced statistical models and machine learning techniques to predict player and team performance based on historical data.
 
-Conclusion
+#### Conclusion
 Through our comprehensive analysis and interactive visualizations, we have provided valuable insights into the world of professional basketball. Our project not only highlights the statistical differences and similarities between the WNBA and NBA but also underscores the importance of data-driven analysis in understanding and appreciating the complexities of these sports. We hope our work inspires further research and exploration into the fascinating world of basketball statistics.
 
 The disparity in the availability of historical statistics for women's basketball, which only began complete record-keeping in 2018 compared to much earlier for men, underscores the need for greater focus and resources in women's sports. With rising fan engagement following events like March Madness and the contributions of standout players like Caitlin Clark and the Aces' A'ja Wilson, we anticipate increased ticket sales and economic stimulation.
