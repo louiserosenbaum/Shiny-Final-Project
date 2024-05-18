@@ -1,6 +1,3 @@
-.git/rebase-merge
-
-
 ---
 title: "TeamAnalysis"
 sidebar: false
@@ -229,4 +226,5 @@ leaflet(stadiums) %>%
   addTiles() %>%
   addMarkers(~lon, ~lat, icon = basketball_icon, popup = ~team)
 ```
+
 
