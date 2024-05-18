@@ -187,6 +187,8 @@ wnba <- wnba %>%
   left_join(wnba_teams, by = "team")
 ```
 
+### Combined data
+
 ```{r}
 # For NBA data
 nba$players_active <- as.character(nba$players_active)
@@ -200,50 +202,41 @@ wnba$players_active <- as.character(wnba$players_active)
 all_basketball <- bind_rows(wnba, nba)
 ```
 
-```{r data entry, include=FALSE}
-# Load necessary libraries
-library(shiny)
-library(leaflet)
-library(maps)
-library(dplyr)
-
-# Define UI for application
-ui <- fluidPage(
-   titlePanel("Basketball Teams Map"),
-   leafletOutput("map")
+### Generating Map 
+```{r}
+# Define UI for map tab
+latlon <- tabPanel(
+  title = "Map",
+  leafletOutput("map")
 )
 
-# Define server logic
-server <- function(input, output) {
-   output$map <- renderLeaflet({
-      # Create a data frame with the latitude and longitude for each stadium
-      stadiums <- data.frame(
-         team = c("Atlanta Hawks", "Boston Celtics", "Brooklyn Nets", "Charlotte Hornets", "Chicago Bulls", "Cleveland Cavaliers", "Dallas Mavericks", "Denver Nuggets", "Detroit Pistons", "Golden State Warriors", "Houston Rockets", "Indiana Pacers", "Los Angeles Clippers", "Los Angeles Lakers", "Memphis Grizzlies", "Miami Heat", "Milwaukee Bucks", "Minnesota Timberwolves", "New Orleans Pelicans", "New York Knicks", "Oklahoma City Thunder", "Orlando Magic", "Philadelphia 76ers", "Phoenix Suns", "Portland Trail Blazers", "Sacramento Kings", "San Antonio Spurs", "Toronto Raptors", "Utah Jazz", "Washington Wizards", "Atlanta Dream", "Chicago Sky", "Connecticut Sun", "Dallas Wings", "Indiana Fever", "Las Vegas Aces", "Los Angeles Sparks", "Minnesota Lynx", "New York Liberty", "Phoenix Mercury", "Seattle Storm", "Washington Mystics"),
-         lat = c(33.7573, 42.3662, 40.6826, 35.2251, 41.8807, 41.4964, 32.7905, 39.7487, 42.3410, 37.7680, 29.7508, 39.7640, 34.0430, 34.0430, 35.1382, 25.7814, 43.0450, 44.9795, 29.9490, 40.7505, 35.4634, 28.5392, 39.9012, 33.4456, 45.5316, 38.5805, 29.4269, 43.6435, 40.7683, 38.8981, 33.6451, 41.8538, 41.4896, 32.7291, 39.7640, 36.0905, 34.0430, 44.9795, 40.6826, 33.4456, 47.6222, 38.8684),
-         lon = c(-84.3963, -71.0621, -73.9754, -80.8392, -87.6742, -81.6882, -96.8103, -105.0077, -83.0551, -122.3877, -95.3621, -86.1555, -118.2673, -118.2673, -90.0505, -80.1870, -87.9170, -93.2760, -90.0812, -73.9934, -97.5151, -81.3839, -75.1720, -112.0712, -122.6668, -121.4997, -98.4375, -79.3791, -111.9011, -77.0209, -84.4585, -87.6195, -72.0863, -97.1125, -86.1555, -115.1750, -118.2673, -93.2760, -73.9754, -112.0712, -122.3545, -76.9930)
-      )
+# Define server logic for map tab
+map_server <- function(input, output) {
+  output$map <- renderLeaflet({
+    stadiums <- data.frame(
+      team = c("Atlanta Hawks", "Boston Celtics", "Brooklyn Nets", "Charlotte Hornets", "Chicago Bulls", "Cleveland Cavaliers", "Dallas Mavericks", "Denver Nuggets", "Detroit Pistons", "Golden State Warriors", "Houston Rockets", "Indiana Pacers", "Los Angeles Clippers", "Los Angeles Lakers", "Memphis Grizzlies", "Miami Heat", "Milwaukee Bucks", "Minnesota Timberwolves", "New Orleans Pelicans", "New York Knicks", "Oklahoma City Thunder", "Orlando Magic", "Philadelphia 76ers", "Phoenix Suns", "Portland Trail Blazers", "Sacramento Kings", "San Antonio Spurs", "Toronto Raptors", "Utah Jazz", "Washington Wizards", "Atlanta Dream", "Chicago Sky", "Connecticut Sun", "Dallas Wings", "Indiana Fever", "Las Vegas Aces", "Los Angeles Sparks", "Minnesota Lynx", "New York Liberty", "Phoenix Mercury", "Seattle Storm", "Washington Mystics"),
+      lat = c(33.7573, 42.3662, 40.6826, 35.2251, 41.8807, 41.4964, 32.7905, 39.7487, 42.3410, 37.7680, 29.7508, 39.7640, 34.0430, 34.0430, 35.1382, 25.7814, 43.0450, 44.9795, 29.9490, 40.7505, 35.4634, 28.5392, 39.9012, 33.4456, 45.5316, 38.5805, 29.4269, 43.6435, 40.7683, 38.8981, 33.6451, 41.8538, 41.4896, 32.7291, 39.7640, 36.0905, 34.0430, 44.9795, 40.6826, 33.4456, 47.6222, 38.8684),
+      lon = c(-84.3963, -71.0621, -73.9754, -80.8392, -87.6742, -81.6882, -96.8103, -105.0077, -83.0551, -122.3877, -95.3621, -86.1555, -118.2673, -118.2673, -90.0505, -80.1870, -87.9170, -93.2760, -90.0812, -73.9934, -97.5151, -81.3839, -75.1720, -112.0712, -122.6668, -121.4997, -98.4375, -79.3791, -111.9011, -77.0209, -84.4585, -87.6195, -72.0863, -97.1125, -86.1555, -115.1750, -118.2673, -93.2760, -73.9754, -112.0712, -122.3545, -76.9930)
+    )
 
-      # Group teams that share the same stadium together
-      stadiums <- stadiums %>%
-         group_by(lat, lon) %>%
-         summarise(team = paste(team, collapse = "<br>"))
+    # Group teams that share the same stadium together
+    stadiums <- stadiums %>%
+      group_by(lat, lon) %>%
+      summarise(team = paste(team, collapse = "<br>"))
 
-      # Create a basketball icon
-      basketball_icon <- makeIcon(
-         iconUrl = "https://emojiguide.org/images/emoji/6/jvgrthwxjlu6.png", # URL to the basketball emoji
-         iconWidth = 28,
-         iconHeight = 28
-      )
+    # Create a basketball icon
+    basketball_icon <- makeIcon(
+      iconUrl = "https://emojiguide.org/images/emoji/6/jvgrthwxjlu6.png",
+      iconWidth = 28,
+      iconHeight = 28
+    )
 
-      # Create a leaflet map
-      leaflet(stadiums) %>%
-         addTiles() %>%
-         addMarkers(~lon, ~lat, icon = basketball_icon, popup = ~team)
-   })
+    # Create a leaflet map
+    leaflet(stadiums) %>%
+      addTiles() %>%
+      addMarkers(~lon, ~lat, icon = basketball_icon, popup = ~team)
+  })
 }
-
-# Run the application 
-shinyApp(ui = ui, server = server)
 ```
 
 ```{r}
@@ -304,7 +297,7 @@ data_server <- function(input, output, session) {
 # Define UI
 ui <- navbarPage(
   title = "WNBA and NBA Final",
-  map_ui,
+  latlon,
   data_ui
 )
 
@@ -317,6 +310,7 @@ server <- function(input, output, session) {
 # Run the application 
 shinyApp(ui = ui, server = server)
 ```
+
 
 ### Maia's part
 
