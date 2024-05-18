@@ -15,42 +15,6 @@ library(shiny)
 ```
 
 ```{r}
-urlnew <-"https://www.espn.com/wnba/stats/player"
-
-robotstxt::paths_allowed(urlnew)   
-
-player <- read_html(urlnew) |>
-  html_nodes(".mr7 .AnchorLink") |>
-  html_text() 
-
-points <- read_html(urlnew) |>
-  html_nodes(".Table__TD:nth-child(4)") |>
-  html_text()
-
-games_played <- read_html(urlnew) |>
-  html_nodes(".Table__Scroller .Table__TD:nth-child(2)") |>
-  html_text() 
-
-rank <- read_html(urlnew) |>
-  html_nodes(".Table--fixed-left .Table__TH:nth-child(1) div , .Table--fixed-left .Table__TD:nth-child(1)") |>
-  html_text() |>
-  tail(n=50)
-
-position <- read_html(urlnew) |>
-  html_nodes(".position") |>
-  html_text()|>
-  head(n=50)
-
-team <- read_html(urlnew) |>
-  html_nodes(".athleteCell__teamAbbrev") |>
-  html_text()|>
-  head(n=50)
-
-primarydata <- tibble(player, points, games_played, position, rank, team) |>
-  print(n= Inf)
-
-
-
 
 url <- "https://www.espn.com/wnba/team/roster/_/name/chi/chicago-sky"
 robotstxt::paths_allowed(url)  
@@ -202,80 +166,136 @@ heightwsh <- read_html(urlwsh) |>
 nameconn <- append(nameconn, "Tiffany Hayes")
 ageconn <- append(ageconn, 33)
 heightconn <- append(heightconn, "5' 10\"")
-player <- c(nameatl,namechi,nameconn,namedal,nameind,namelv,namela,namemin,nameny,namephx, namesea,namewsh)
-age <- c(ageatl,agechi,ageconn,agedal,ageind,agelv,agela,agemin,ageny,agephx, agesea,agewsh)
-height <-c(heightatl,heightchi,heightconn,heightdal,heightind,heightlv,heightla,heightmin,heightny,heightphx, heightsea,heightwsh)
+playerfull <- c(nameatl,namechi,nameconn,namedal,nameind,namelv,namela,namemin,nameny,namephx, namesea,namewsh)
+agefull <- c(ageatl,agechi,ageconn,agedal,ageind,agelv,agela,agemin,ageny,agephx, agesea,agewsh)
+heightfull <-c(heightatl,heightchi,heightconn,heightdal,heightind,heightlv,heightla,heightmin,heightny,heightphx, heightsea,heightwsh) 
+```
 
-tibble(player,age,height) |>
-  print(n=Inf) 
 
-dataage <- tibble(player,age,height) |>
-  filter(player!="Desi-Rae Young") |>
-  mutate(age=(as.double(age)-1)) |>
-  print(n=Inf) 
+```{r}
+scrape_teamdata <- function(year){
+  urlteam <-str_c("https://www.espn.com/wnba/standings/_/season/",year, sep = "")
 
-primary_data1 <- left_join(primarydata, dataage, 
-                           by = join_by(player== player)) |>
-  mutate(height= str_replace(height, '"', "")) |>
-  mutate(height= str_replace(height, "'", "")) |>
-  separate(height, c("feet", "inches"), " ") |>
+robotstxt::paths_allowed(urlteam)  
+
+teamm <- read_html(urlteam) |>
+  html_nodes(".hide-mobile .AnchorLink") |>
+  html_text()
+
+wins <- read_html(urlteam) |>
+  html_nodes(".Table__TD:nth-child(1) .stat-cell") |>
+  html_text()
+wins
+
+losses <- read_html(urlteam) |>
+  html_nodes(".Table__TD:nth-child(2) .stat-cell") |>
+  html_text()
+
+percent_won <- read_html(urlteam) |>
+  html_nodes(".Table__TD:nth-child(3) .stat-cell") |>
+  html_text()
+
+home_record <- read_html(urlteam) |>
+  html_nodes(".Table__TD:nth-child(5) .stat-cell") |>
+  html_text()
+
+away_record <- read_html(urlteam) |>
+  html_nodes(".Table__TD:nth-child(6) .stat-cell") |>
+  html_text()
+
+conf_record <- read_html(urlteam) |>
+  html_nodes(".Table__TD:nth-child(7) .stat-cell") |>
+  html_text()
+
+points_per_game <- read_html(urlteam) |>
+  html_nodes(".Table__TD:nth-child(8) .stat-cell") |>
+  html_text()
+
+tibble(teamm, wins, losses, percent_won, home_record, away_record, conf_record, points_per_game) |>
+  mutate(wins=as.double(wins), losses= as.double(losses), points_per_game= as.double(points_per_game), percent_won= as.double(percent_won)) |>
+  mutate(year = year, team= teamm) |>
+  select(-teamm)
+}
+
+
+scrape_teamdata(2023)
+
+
+teamstatdata <- bind_rows(scrape_teamdata(2016),
+          scrape_teamdata(2017),
+          scrape_teamdata(2018), 
+          scrape_teamdata(2019), 
+          scrape_teamdata(2020), 
+          scrape_teamdata(2021), 
+          scrape_teamdata(2022), 
+          scrape_teamdata(2023))
+
+teamstatdata |>
+  count(year) 
+
+
+scrape_playerdata <- function(year){
+  urlplayer <-str_c("https://www.espn.com/wnba/stats/player/_/season/",year,"/seasontype/2", sep = "")
+
+robotstxt::paths_allowed(urlplayer)  
+
+playeryear <- read_html(urlplayer) |>
+  html_nodes(".mr7 .AnchorLink") |>
+  html_text() 
+
+pointsyear <- read_html(urlplayer) |>
+  html_nodes(".Table__TD:nth-child(4)") |>
+  html_text()
+
+games_playedyear <- read_html(urlplayer) |>
+  html_nodes(".Table__Scroller .Table__TD:nth-child(2)") |>
+  html_text() 
+
+rankyear <- read_html(urlplayer) |>
+  html_nodes(".Table--fixed-left .Table__TH:nth-child(1) div , .Table--fixed-left .Table__TD:nth-child(1)") |>
+  html_text() |>
+  tail(n=50)
+
+positionyear <- read_html(urlplayer) |>
+  html_nodes(".position") |>
+  html_text()|>
+  head(n=50)
+
+teamyear <- read_html(urlplayer) |>
+  html_nodes(".athleteCell__teamAbbrev") |>
+  html_text()|>
+  head(n=50)
+
+primary_data <- tibble(playeryear, pointsyear, games_playedyear, rankyear, positionyear, teamyear)
+
+dataage <- tibble(playerfull,agefull,heightfull) |>
+  mutate(agefull=(as.double(agefull)-(2024-year)))
+
+left_join(primary_data, dataage, 
+                           by = join_by(playeryear== playerfull)) |>
+  mutate(heightfull= str_replace(heightfull, '"', "")) |>
+  mutate(heightfull= str_replace(heightfull, "'", "")) |>
+  separate(heightfull, c("feet", "inches"), " ") |>
   mutate(feet= as.double(feet), inches= as.double(inches)) |>
-  print(n=Inf) 
-
-primary_data1|>
-  ggplot(aes(x= age, y= team)) +
-  geom_boxplot()
-
-primary_data1 |>
-  ggplot(aes(x= age)) +
-  geom_boxplot()
-
-primary_data1 <- primary_data1 |>
   mutate(feet_in_inches= feet*12, inches_in_feet= inches/12) |>
   mutate(height_in = feet_in_inches+inches, 
          height_ft= feet+inches_in_feet) |>
-  select(-feet, -inches, -feet_in_inches, -inches_in_feet)
+  select(-feet, -inches, -feet_in_inches, -inches_in_feet) |>
+  mutate(year=year)
+}
 
+
+scrape_playerdata(2023)
+
+
+playerstatdata <- bind_rows(
+          scrape_playerdata(2018), 
+          scrape_playerdata(2019), 
+          scrape_playerdata(2020), 
+          scrape_playerdata(2021), 
+          scrape_playerdata(2022), 
+          scrape_playerdata(2023))
+
+playerstatdata |>
+  count(year) 
 ```
-
-
-height
-age 
-
-```{r primary_data1, echo= FALSE}
-
-inputPanel(
-      selectInput(inputId = "categ",
-                  label = h3("Boxplot categories"),
-                  choices = c("Games Played" = "games_played", 
-                              "Position" = "position", 
-                              "Team" = "team"),
-                  selected = "Team")
-)
-
-renderPlot({
- primary_data1 |> 
-    select(input$categ, "age") |>
-    ggplot(aes(x=.data[[input$categ]], y= age)) +
-    geom_boxplot() +
-    coord_flip()
-  }) 
-
-inputPanel(
-      selectInput(inputId = "categheight",
-                  label = h3("Boxplot categories"),
-                  choices = c("Games Played" = "games_played", 
-                              "Position" = "position", 
-                              "Team" = "team"),
-                  selected = "Team")
-)
-
-renderPlot({
- primary_data1 |> 
-    select(input$categheight, "height_in") |>
-    ggplot(aes(x=.data[[input$categheight]], y= height_in)) +
-    geom_boxplot() +
-    coord_flip()
-  }) 
-```
-
