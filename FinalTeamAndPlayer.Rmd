@@ -11,6 +11,8 @@ output:
       navbar-bg: "#e9b0fc"
 ---
 
+### [Github Code](https://louiserosenbaum.github.io/shiny-final-project/)
+
 ```{r global, include= FALSE, message=FALSE}
 library(readr)
 library(dplyr)
@@ -499,7 +501,9 @@ inputPanel(
                   selected = "Atlanta Dream")
 )
 
+
 strong("We also hoped to examine some team statistics as they evolve through the years. We hope to answer the questions: What teams did the best each year? By what variable? How have teams improved throughout the years?")
+
 
 p("One interesting relationship we found in this section is that the number of losses and wins in 2020 seemed to dropped. This would make sense because there were less games, but interestingly this isn't the case for all teams, for example the Los Vegas Aces.")
 ```
@@ -534,9 +538,6 @@ renderPlot({
   }) 
 
 ```
-
-Column
--------------------------
 
 
 How does the NBA differ from the WNBA?
