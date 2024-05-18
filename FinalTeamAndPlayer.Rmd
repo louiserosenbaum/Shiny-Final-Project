@@ -4,8 +4,13 @@ subtitle: "By: Louise and Maia"
 runtime: shiny
 output:
   flexdashboard::flex_dashboard:
-    theme: journal
+    theme: 
+      bg: "#fcfbf8"
+      fg: "#171c19" 
+      primary: "#e9b0fc"
+      navbar-bg: "#e9b0fc"
 ---
+
 ```{r global, include= FALSE, message=FALSE}
 library(readr)
 library(dplyr)
@@ -27,25 +32,27 @@ About
 Column {data-width = 400}
 -------------------------
 
-#### Introduction
-This is the final project for the course "Data Science 2" at St. Olaf College. The goal of this project is to create a Shiny app that is able to generate graphs and tables based on the user's input. The app is designed to be user-friendly and interactive. The app is hosted on shinyapps.io and can be accessed [here](https://louiserosenbaum.github.io/shiny-final-project/).
+For our final project, we aimed to scrape data from the WNBA to uncover insights into the statistics behind women's basketball. Using the skills and tools we have acquired in Data Science 2, we collected data on various aspects of the WNBA in 2023. Our analysis includes a comparison of games played, player positions, teams, and the relationship between player height and age.
 
-For this project, we will be looking at statistics of the WNBA and D1 Women's basketball teams. The data was collected from the NCAA website and the WNBA website. The data includes the following variables: team name, conference, win-loss record, points per game, field goal percentage, 3-point percentage, free throw percentage, rebounds per game, assists per game, steals per game, blocks per game, and turnovers per game. 
+Additionally, we incorporated a comparative analysis with the NBA from 2018 to 2024. This comparison examines metrics such as the number of active players, average age, total capital, team spending limits, and current expenditure on players. We utilized multiple data sources to ensure a comprehensive analysis, scraping data from various websites, player profiles, and financial reports.
+
+Through this project, we aim to highlight key statistical differences and similarities between the WNBA and NBA, providing a thorough overview of the landscape of professional basketball for both women and men. We have included visualizations such as bar charts and scatter plots to clearly present our findings. Furthermore, we created interactive dashboards that allow users to explore the data in more detail, offering insights into specific teams and players.
+
+We hope you find our exploration of these sports statistics both informative and engaging, shedding light on the dynamics of professional basketball across genders.
 
 #### Background Information
+
 The WNBA regular season consists of 40 games, which concludes in September, compared to the NBA's 82-game regular season. The NBA season starts on Tuesday, October 24, while the WNBA season begins in May, coinciding with the NBA playoffs. The WNBA also uses a slightly smaller ball, measuring 28.5 inches in circumference, compared to the NBA's 29.5-inch ball. Additionally, the style of play differs significantly between the two leagues, with the WNBA often emphasizing teamwork, fundamentals, and strategic play, while the NBA is known for its fast pace, athleticism, and individual star power.
 
+#### Data Source
+https://www.espn.com, hoopshype.com ,and spotrac.com
 
-bg: "#fafce9"
-      fg: "#216bd3" 
-      primary: "#216bd3"
-      
 Demographics of the WNBA
 ==========================
 
-
 Inputs {.sidebar}
 -------------------------
+
 ```{r, include=FALSE, message=FALSE}
 
 url <- "https://www.espn.com/wnba/team/roster/_/name/chi/chicago-sky"
@@ -333,12 +340,12 @@ playerstatdata |>
 
 ```{r, echo= FALSE}
 inputPanel(
-      selectInput(inputId="year", label= "y-axis variable",
+      selectInput(inputId="year", label= "Age Response Variable",
                   choices = c("Games Played" = "games_playedyear", 
                               "Position" = "positionyear", 
                               "Team" = "teamyear"),
                   selected = "teamyear"),
-      selectInput("x", label = "year",
+      selectInput("x", label = "Year",
                   choices = c("2018" = "2018", 
                               "2019" = "2019", 
                               "2020" = "2020", 
@@ -350,12 +357,12 @@ inputPanel(
 
 
 inputPanel(
-      selectInput(inputId = "y2", label = "height response variable",
+      selectInput(inputId = "y2", label = "Height Response Variable",
                   choices = c("Games Played" = "games_playedyear", 
                               "Position" = "positionyear", 
                               "Team" = "teamyear"),
                   selected = "teamyear"),
-      selectInput("x2", label = "year",
+      selectInput("x2", label = "Year",
                   choices = c("2018" = "2018", 
                               "2019" = "2019", 
                               "2020" = "2020", 
@@ -365,10 +372,16 @@ inputPanel(
                   selected = "2023")
 )
 
+strong("In this section we hope to examine the demographics of the top 50 ranked players (ranked by points per game) for each year to answer the following questions: What ages play the most? What is the average height on each team? How does this affects their stats?")
+       
+strong("Key: C= Center
+  F= Forward
+  G= Gaurd")
+
 ```
 
 
-Column 
+Column
 -------------------------
 
 ```{r, echo= FALSE}
@@ -377,8 +390,11 @@ renderPlot({
     drop_na() |>
     filter(year %in% c(input$x)) |>
     ggplot(aes(x=.data[[input$year]], y= agefull)) +
-    geom_boxplot() +
-      coord_flip()
+    geom_boxplot(color= "#fe6c5d") +
+      coord_flip()+
+    theme_classic() +
+    labs(title= "How does age affect player stats?", y= "Age (years)", 
+         x="Selected Stat")
   }) 
 
 
@@ -387,27 +403,36 @@ renderPlot({
     drop_na() |>
     filter(year %in% c(input$x2)) |>
     ggplot(aes(x=.data[[input$y2]], y= height_in)) +
-    geom_boxplot() +
-      coord_flip()
+    geom_boxplot(color= "#fe6c5d") +
+      coord_flip()+
+    theme_classic() +
+    labs(title= "How does height affect player stats?", y= "Height (in)", 
+         x="Selected Stat")
   }) 
 
 ```
+
+```{r}
+p("One relationship that was interesting was that players who are in the forward position tend to be the youngest. There were no other clear relationships between age/height and stats.")
+
+```
+
+
 
 WNBA Team Statistics
 ==========================
 
 Inputs {.sidebar}
 -------------------------
-
 ```{r, echo= FALSE}
 inputPanel(
-      selectInput(inputId="xaxis", label= "Response Variable",
+      selectInput(inputId="xaxis", label= "Team Statistics Response Variable",
                   choices = c("Points per Game" = "points_per_game", 
                               "Percent Won" = "percent_won", 
                               "Number of Wins" = "wins", 
                               "Number of Losses"= "losses"),
                   selected = "points_per_game"),
-      selectInput("yearteam", label = "year",
+      selectInput("yearteam", label = "Year",
                   choices = c("2018" = "2018", 
                               "2019" = "2019", 
                               "2020" = "2020", 
@@ -416,9 +441,35 @@ inputPanel(
                               "2023"= "2023"),
                   selected = "2023")
 )
+
+inputPanel(
+  selectInput(inputId="xaxis2", label= "Teams Over Time Response Variable",
+                  choices = c("Points per Game" = "points_per_game", 
+                              "Percent Won" = "percent_won", 
+                              "Number of Wins" = "wins", 
+                              "Number of Losses"= "losses"),
+                  selected = "points_per_game"),
+  selectInput(inputId="teamselect", label= "Team",
+                  choices = c("Minnesota Lynx" = "Minnesota Lynx", 
+                              "Los Angeles Sparks" = "Los Angeles Sparks", 
+                              "New York Liberty" = "New York Liberty", 
+                              "Chicago Sky"= "Chicago Sky", 
+                              "Indiana Fever"= "Indiana Fever", 
+                              "Atlanta Dream"= "Atlanta Dream", 
+                              "Seattle Storm" = "Seattle Storm", 
+                              "Phoenix Mercury" = "Phoenix Mercury", 
+                              "Connecticut Sun" = "Connecticut Sun", 
+                              "Washington Mystics"= "Washington Mystics", 
+                              "Dallas Wings"= "Dallas Wings", 
+                              "San Antonio Stars"= "San Antonio Stars", 
+                              "Las Vegas Aces"= "Las Vegas Aces"),
+                  selected = "Atlanta Dream")
+)
+
+strong("We also hoped to examine some team statistics as they evolve through the years. We hope to answer the questions: What teams did the best each year? By what variable? How have teams improved throughout the years?")
 ```
 
-Column {data-width = 400}
+Column
 -------------------------
 ```{r, echo= FALSE}
 renderPlot({
@@ -428,9 +479,32 @@ renderPlot({
     ggplot(aes(x=team, y= .data[[input$xaxis]])) +
     geom_col(fill= "#fe6c5d") +
     coord_flip() +
-    theme_classic()
+    theme_classic()+
+    labs(title= "Team Statistics", y= "Stat", x= "Team")
   }) 
 
+
+```
+
+```{r, echo= FALSE}
+renderPlot({
+ teamstatdata |> 
+    filter(team %in% c(input$teamselect)) |>
+    mutate(team= fct_reorder(team,.data[[input$xaxis2]])) |>
+    ggplot(aes(x=year, y= .data[[input$xaxis2]])) +
+    geom_point(color= "#fe6c5d")+
+    geom_smooth(color= "pink", se= FALSE) +
+    theme_classic() +
+    labs(title= "Team Stats Througout the Years", x= "Year", y= "Response Variable")
+  }) 
+
+```
+
+Column
+-------------------------
+
+```{r}
+p("One interesting relationship we found in this section is that the number of losses and wins in 2020 seemed to dropped. This would make sense because there were less games, but interestingly this isn't the case for all teams, for example the Los Vegas Aces.")
 ```
 
 
@@ -513,7 +587,6 @@ nba_teams <- tibble(
 nba <- nba %>%
   left_join(nba_teams, by = "team")
 ```
-
 
 ```{r, include=FALSE, message=FALSE}
 # WNBA Data
@@ -599,7 +672,6 @@ wnba <- wnba %>%
   left_join(wnba_teams, by = "team")
 ```
 
-
 ```{r, include=FALSE, message=FALSE}
 #Combined data
 
@@ -615,7 +687,6 @@ wnba$players_active <- as.character(wnba$players_active)
 all_basketball <- bind_rows(wnba, nba)
 ```
 
- 
 ```{r}
 # Generating Map
 # Define UI for map tab
@@ -725,5 +796,5 @@ server <- function(input, output, session) {
 shinyApp(ui = ui, server = server)
 ```
 
-
-
+Conclusion
+==========================
