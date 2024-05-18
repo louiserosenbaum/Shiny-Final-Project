@@ -40,7 +40,7 @@ bg: "#fafce9"
       fg: "#216bd3" 
       primary: "#216bd3"
       
-Demographics
+Demographics of the WNBA
 ==========================
 
 
@@ -333,7 +333,7 @@ playerstatdata |>
 
 ```{r, echo= FALSE}
 inputPanel(
-      selectInput("y", label= "y-axis variable",
+      selectInput(inputId="year", label= "y-axis variable",
                   choices = c("Games Played" = "games_playedyear", 
                               "Position" = "positionyear", 
                               "Team" = "teamyear"),
@@ -350,11 +350,19 @@ inputPanel(
 
 
 inputPanel(
-      selectInput("y2", label = "height response variable",
-                  choices = c("Games Played" = "games_played", 
-                              "Position" = "position", 
-                              "Team" = "team"),
-                  selected = "team")
+      selectInput(inputId = "y2", label = "height response variable",
+                  choices = c("Games Played" = "games_playedyear", 
+                              "Position" = "positionyear", 
+                              "Team" = "teamyear"),
+                  selected = "teamyear"),
+      selectInput("x2", label = "year",
+                  choices = c("2018" = "2018", 
+                              "2019" = "2019", 
+                              "2020" = "2020", 
+                              "2021"= "2021", 
+                              "2022"= "2022", 
+                              "2023"= "2023"),
+                  selected = "2023")
 )
 
 ```
@@ -366,26 +374,27 @@ Column
 ```{r, echo= FALSE}
 renderPlot({
  playerstatdata |> 
+    drop_na() |>
     filter(year %in% c(input$x)) |>
-    ggplot(aes(x="agefull", y= input$y)) +
-    geom_boxplot()
+    ggplot(aes(x=.data[[input$year]], y= agefull)) +
+    geom_boxplot() +
+      coord_flip()
   }) 
 
-#renderPlot({
-# playerstatdata |> 
-#    select(input$categheight, "height_in") |>
-#    ggplot(aes(x=.data[[input$categheight]], y= height_in)) +
-#    geom_boxplot() +
-#    coord_flip()
-#  }) 
+
+renderPlot({
+ playerstatdata |> 
+    drop_na() |>
+    filter(year %in% c(input$x2)) |>
+    ggplot(aes(x=.data[[input$y2]], y= height_in)) +
+    geom_boxplot() +
+      coord_flip()
+  }) 
+
 ```
 
-Everything else
+How does the NBA differ from the WNBA?
 ==========================
-
-
-Inputs {.sidebar}
--------------------------
 
 ```{r, include= FALSE, message=FALSE}
 # NBA Data
@@ -660,7 +669,7 @@ data_server <- function(input, output, session) {
 ```{r}
 # Define UI
 ui <- navbarPage(
-  title = "WNBA and NBA Final",
+  title = "Location WNBA and NBA Teams",
   latlon,
   data_ui
 )

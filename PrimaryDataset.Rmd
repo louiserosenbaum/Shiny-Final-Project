@@ -476,4 +476,7 @@ playerstatdata <- bind_rows(
 
 playerstatdata |>
   count(year) 
+
+write.csv(playerstatdata)
+
 ```
