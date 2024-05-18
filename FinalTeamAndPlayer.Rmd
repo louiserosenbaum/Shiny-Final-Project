@@ -79,7 +79,8 @@ leaflet(wnba_stadiums) %>%
 The WNBA regular season consists of 40 games, which concludes in September, compared to the NBA's 82-game regular season. The NBA season starts on Tuesday, October 24, while the WNBA season begins in May, coinciding with the NBA playoffs. The WNBA also uses a slightly smaller ball, measuring 28.5 inches in circumference, compared to the NBA's 29.5-inch ball. Additionally, the style of play differs significantly between the two leagues, with the WNBA often emphasizing teamwork, fundamentals, and strategic play, while the NBA is known for its fast pace, athleticism, and individual star power.
 
 #### Data Source
-https://www.espn.com, hoopshype.com ,and spotrac.com
+We drew data from these three websites:
+https://www.espn.com, https://hoopshype.com, and http://spotrac.com
 
 Demographics of the WNBA
 ==========================
@@ -843,19 +844,20 @@ Team Performance:
 
 Our analysis of team statistics over time showed fluctuations in team performance, particularly in the number of wins and losses. Notably, the 2020 season saw a significant drop in the number of games due to external factors, impacting team performance metrics.
 The interactive plots allowed users to explore how different teams performed each year, highlighting trends and changes in performance over time.
-Comparison Between WNBA and NBA:
 
+Comparison Between WNBA and NBA:
 By comparing the WNBA and NBA data, we uncovered key differences and similarities between the leagues. For instance, the NBA generally has higher financial expenditures and a larger number of active players due to its longer season and greater commercial reach.
 Our analysis highlighted the differences in playing style and strategic focus between the two leagues, emphasizing the WNBA's emphasis on teamwork and fundamentals compared to the NBA's fast-paced, star-driven gameplay.
-Geographical Distribution:
 
+Geographical Distribution:
 Using Leaflet maps, we visualized the geographical distribution of WNBA and NBA teams. This provided a spatial perspective on where teams are located across the United States, offering insights into regional representation in professional basketball.
+
 Future Directions
 This project serves as a foundation for further exploration into the dynamics of professional basketball. Potential future directions could include:
-
 Analyzing the impact of external factors such as injuries, trades, and draft picks on team performance and player statistics.
 Expanding the scope to include international leagues and their comparison with the WNBA and NBA.
 Incorporating advanced statistical models and machine learning techniques to predict player and team performance based on historical data.
+
 Conclusion
 Through our comprehensive analysis and interactive visualizations, we have provided valuable insights into the world of professional basketball. Our project not only highlights the statistical differences and similarities between the WNBA and NBA but also underscores the importance of data-driven analysis in understanding and appreciating the complexities of these sports. We hope our work inspires further research and exploration into the fascinating world of basketball statistics.
 
