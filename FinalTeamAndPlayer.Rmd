@@ -393,6 +393,47 @@ renderPlot({
 
 ```
 
+WNBA Team Statistics
+==========================
+
+Inputs {.sidebar}
+-------------------------
+
+```{r, echo= FALSE}
+inputPanel(
+      selectInput(inputId="xaxis", label= "Response Variable",
+                  choices = c("Points per Game" = "points_per_game", 
+                              "Percent Won" = "percent_won", 
+                              "Number of Wins" = "wins", 
+                              "Number of Losses"= "losses"),
+                  selected = "points_per_game"),
+      selectInput("yearteam", label = "year",
+                  choices = c("2018" = "2018", 
+                              "2019" = "2019", 
+                              "2020" = "2020", 
+                              "2021"= "2021", 
+                              "2022"= "2022", 
+                              "2023"= "2023"),
+                  selected = "2023")
+)
+```
+
+Column {data-width = 400}
+-------------------------
+```{r, echo= FALSE}
+renderPlot({
+ teamstatdata |> 
+    filter(year %in% c(input$yearteam)) |>
+    mutate(team= fct_reorder(team,.data[[input$xaxis]])) |>
+    ggplot(aes(x=team, y= .data[[input$xaxis]])) +
+    geom_col(fill= "#fe6c5d") +
+    coord_flip() +
+    theme_classic()
+  }) 
+
+```
+
+
 How does the NBA differ from the WNBA?
 ==========================
 
