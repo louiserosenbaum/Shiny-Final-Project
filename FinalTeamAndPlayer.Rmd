@@ -1,16 +1,12 @@
 ---
 title: "WNBA and NBA Final"
 subtitle: "By: Louise and Maia"
+runtime: shiny
 output:
   flexdashboard::flex_dashboard:
-    theme:
-      bg: "#fafce9"
-      fg: "#216bd3" 
-      primary: "#216bd3"
-runtime: shiny
+    theme: journal
 ---
-
-```{r}
+```{r global, include= FALSE, message=FALSE}
 library(readr)
 library(dplyr)
 library(ggplot2)
@@ -21,341 +17,36 @@ library(shinyWidgets)
 library(rvest)
 library(httr)
 library(purrr)
+library(leaflet)
+
 ```
 
-### NBA Data
+About
+==========================
 
-```{r}
-scrape_nbadata <- function(start_year){
-  url <-str_c("https://www.spotrac.com/nba/cap/_/year/", start_year, "/sort/cap_maximum_space", sep = "")
+Column {data-width = 400}
+-------------------------
 
-  nba <- read_html(url)
+#### Introduction
+This is the final project for the course "Data Science 2" at St. Olaf College. The goal of this project is to create a Shiny app that is able to generate graphs and tables based on the user's input. The app is designed to be user-friendly and interactive. The app is hosted on shinyapps.io and can be accessed [here](https://louiserosenbaum.github.io/shiny-final-project/).
 
-  tables <- html_nodes(nba, css = "table") 
+For this project, we will be looking at statistics of the WNBA and D1 Women's basketball teams. The data was collected from the NCAA website and the WNBA website. The data includes the following variables: team name, conference, win-loss record, points per game, field goal percentage, 3-point percentage, free throw percentage, rebounds per game, assists per game, steals per game, blocks per game, and turnovers per game. 
 
-  nba_data <- html_table(tables, header = TRUE, fill = TRUE)[[1]] 
+#### Background Information
+The WNBA regular season consists of 40 games, which concludes in September, compared to the NBA's 82-game regular season. The NBA season starts on Tuesday, October 24, while the WNBA season begins in May, coinciding with the NBA playoffs. The WNBA also uses a slightly smaller ball, measuring 28.5 inches in circumference, compared to the NBA's 29.5-inch ball. Additionally, the style of play differs significantly between the two leagues, with the WNBA often emphasizing teamwork, fundamentals, and strategic play, while the NBA is known for its fast pace, athleticism, and individual star power.
 
-  # Initialize year column
-  nba_data$year <- NA
 
-  # Initialize year and counter
-  year <- start_year
-  counter <- 0
+bg: "#fafce9"
+      fg: "#216bd3" 
+      primary: "#216bd3"
+      
+Demographics
+==========================
 
-  # Loop over rows
-  for(i in seq_len(nrow(nba_data))) {
-    # If the next rank is 1 and is not NA, increment the counter
-    if(i < nrow(nba_data) && !is.na(nba_data$Rank[i+1]) && nba_data$Rank[i+1] == 1) {
-      counter <- counter + 1
-    }
-    # Calculate the year based on the counter
-    nba_data$year[i] <- start_year + counter
-  }
 
-  # Remove rows with "Totals" or "Averages"
-  nba_data <- nba_data[!rowSums(sapply(nba_data, function(x) grepl("Totals|Averages", x))), ]
-
-  nba_data <- nba_data %>%
-    mutate(Team = str_sub(Team, start = 1, end = 3))
-  return(nba_data)
-}
-
-scrape_nbadata(2023)
-
-# Scrape data for all years
-nba <- bind_rows(scrape_nbadata(2017),
-          scrape_nbadata(2018),
-          scrape_nbadata(2019),
-          scrape_nbadata(2020),
-          scrape_nbadata(2021),
-          scrape_nbadata(2022),
-          scrape_nbadata(2023))
-
-# Rename columns
-colnames(nba)[1] <- "rank"
-colnames(nba)[2] <- "team"
-colnames(nba)[4] <- "players_active"
-colnames(nba)[5] <- "avg_age_team"
-colnames(nba)[6] <- "total_cap_all"
-colnames(nba)[7] <- "cap_space_all"
-colnames(nba)[9] <- "active"
-
-# Select columns and add new column
-nba <- nba |>
-  select (year, rank, team, players_active, avg_age_team, total_cap_all, cap_space_all, active) |>
-  mutate(WM = "M")
-
-nba
-```
-
-```{r}
-# Create a data frame with team abbreviations, full names, and cities
-nba_teams <- tibble(
-  team = c("BOS", "BKN", "NYK", "PHI", "TOR", "CHI", "CLE", "DET", "IND", "MIL", "ATL", "CHA", "MIA", "ORL", "WAS", "DEN", "MIN", "OKC", "POR", "UTA", "GSW", "LAC", "LAL", "PHX", "SAC", "DAL", "HOU", "MEM", "NOP", "SAS"),
-  team_name = c("Boston Celtics", "Brooklyn Nets", "New York Knicks", "Philadelphia 76ers", "Toronto Raptors", "Chicago Bulls", "Cleveland Cavaliers", "Detroit Pistons", "Indiana Pacers", "Milwaukee Bucks", "Atlanta Hawks", "Charlotte Hornets", "Miami Heat", "Orlando Magic", "Washington Wizards", "Denver Nuggets", "Minnesota Timberwolves", "Oklahoma City Thunder", "Portland Trail Blazers", "Utah Jazz", "Golden State Warriors", "LA Clippers", "Los Angeles Lakers", "Phoenix Suns", "Sacramento Kings", "Dallas Mavericks", "Houston Rockets", "Memphis Grizzlies", "New Orleans Pelicans", "San Antonio Spurs"),
-  city = c("Boston", "Brooklyn", "New York", "Philadelphia", "Toronto", "Chicago", "Cleveland", "Detroit", "Indianapolis", "Milwaukee", "Atlanta", "Charlotte", "Miami", "Orlando", "Washington", "Denver", "Minneapolis", "Oklahoma City", "Portland", "Salt Lake City", "San Francisco", "Los Angeles", "Los Angeles", "Phoenix", "Sacramento", "Dallas", "Houston", "Memphis", "New Orleans", "San Antonio")
-)
-
-# Join NBA data with team names and cities
-nba <- nba %>%
-  left_join(nba_teams, by = "team")
-```
-
-
-### WNBA Data
-
-```{r}
-scrape_wnbadata <- function(start_year){
-  url <-str_c("https://www.spotrac.com/wnba/cap/_/year/", start_year, "/sort/cap_maximum_space", sep = "")
-
-  wnba <- read_html(url)
-
-  tables <- html_nodes(wnba, css = "table") 
-
-  wnba_data <- html_table(tables, header = TRUE, fill = TRUE)[[1]] 
-
-  # Initialize year column
-  wnba_data$year <- NA
-
-  # Initialize year and counter
-  year <- start_year
-  counter <- 0
-
-  # Loop over rows
-  for(i in seq_len(nrow(wnba_data))) {
-    # If the next rank is 1 and is not NA, increment the counter
-    if(i < nrow(wnba_data) && !is.na(wnba_data$Rank[i+1]) && wnba_data$Rank[i+1] == 1) {
-      counter <- counter + 1
-    }
-    # Calculate the year based on the counter
-    wnba_data$year[i] <- start_year + counter
-  }
-
-  # Remove rows with "Totals" or "Averages"
-  wnba_data <- wnba_data[!rowSums(sapply(wnba_data, function(x) grepl("Totals|Averages", x))), ]
-
-  wnba_data <- wnba_data %>%
-    mutate(Team = str_sub(Team, start = 1, end = 3)) %>%
-    mutate(Team = case_when(
-      Team == "NY\n" ~ "NYL",
-      Team == "LA\n" ~ "LAX",
-      Team == "LV\n" ~ "LVA",
-      TRUE ~ Team
-    ))
-
-  return(wnba_data)
-}
-
-scrape_wnbadata(2024)
-
-# Scrape data for all years
-wnba <- bind_rows(scrape_wnbadata(2018),
-          scrape_wnbadata(2019),
-          scrape_wnbadata(2020),
-          scrape_wnbadata(2021),
-          scrape_wnbadata(2022),
-          scrape_wnbadata(2023),
-          scrape_wnbadata(2024))
-
-# Rename columns
-colnames(wnba)[1] <- "rank"
-colnames(wnba)[2] <- "team"
-colnames(wnba)[3] <- "players_active"
-colnames(wnba)[4] <- "avg_age_team"
-colnames(wnba)[5] <- "total_cap_all"
-colnames(wnba)[6] <- "cap_space_all"
-colnames(wnba)[7] <- "active"
-
-# Select columns and add new column
-wnba <- wnba |>
-  select(year, rank, team, players_active, avg_age_team, total_cap_all, cap_space_all, active) |>
-  mutate(WM = "W")
-
-wnba
-```
-
-```{r}
-# Create a data frame with team abbreviations, full names, and cities
-wnba_teams <- tibble(
-  team = c("ATL", "CHI", "CON", "IND", "NYL", "WAS", "DAL", "LVA", "LAX", "MIN", "PHX", "SEA"),
-  team_name = c("Atlanta Dream", "Chicago Sky", "Connecticut Sun", "Indiana Fever", "New York Liberty", "Washington Mystics", "Dallas Wings", "Las Vegas Aces", "Los Angeles Sparks", "Minnesota Lynx", "Phoenix Mercury", "Seattle Storm"),
-  city = c("Atlanta", "Chicago", "Uncasville", "Indianapolis", "New York", "Washington", "Dallas", "Las Vegas", "Los Angeles", "Minneapolis", "Phoenix", "Seattle")
-)
-
-# Join WNBA data with team names and cities
-wnba <- wnba %>%
-  left_join(wnba_teams, by = "team")
-```
-
-### Combined data
-
-```{r}
-# For NBA data
-nba$players_active <- as.character(nba$players_active)
-
-nba$year <- nba$year + 1
-
-# For WNBA data
-wnba$players_active <- as.character(wnba$players_active)
-
-# Now bind the rows
-all_basketball <- bind_rows(wnba, nba)
-```
-
-### Generating Map 
-```{r}
-# Define UI for map tab
-latlon <- tabPanel(
-  title = "Map",
-  leafletOutput("map")
-)
-
-# Define server logic for map tab
-map_server <- function(input, output) {
-  output$map <- renderLeaflet({
-    stadiums <- data.frame(
-      team = c("Atlanta Hawks", "Boston Celtics", "Brooklyn Nets", "Charlotte Hornets", "Chicago Bulls", "Cleveland Cavaliers", "Dallas Mavericks", "Denver Nuggets", "Detroit Pistons", "Golden State Warriors", "Houston Rockets", "Indiana Pacers", "Los Angeles Clippers", "Los Angeles Lakers", "Memphis Grizzlies", "Miami Heat", "Milwaukee Bucks", "Minnesota Timberwolves", "New Orleans Pelicans", "New York Knicks", "Oklahoma City Thunder", "Orlando Magic", "Philadelphia 76ers", "Phoenix Suns", "Portland Trail Blazers", "Sacramento Kings", "San Antonio Spurs", "Toronto Raptors", "Utah Jazz", "Washington Wizards", "Atlanta Dream", "Chicago Sky", "Connecticut Sun", "Dallas Wings", "Indiana Fever", "Las Vegas Aces", "Los Angeles Sparks", "Minnesota Lynx", "New York Liberty", "Phoenix Mercury", "Seattle Storm", "Washington Mystics"),
-      lat = c(33.7573, 42.3662, 40.6826, 35.2251, 41.8807, 41.4964, 32.7905, 39.7487, 42.3410, 37.7680, 29.7508, 39.7640, 34.0430, 34.0430, 35.1382, 25.7814, 43.0450, 44.9795, 29.9490, 40.7505, 35.4634, 28.5392, 39.9012, 33.4456, 45.5316, 38.5805, 29.4269, 43.6435, 40.7683, 38.8981, 33.6451, 41.8538, 41.4896, 32.7291, 39.7640, 36.0905, 34.0430, 44.9795, 40.6826, 33.4456, 47.6222, 38.8684),
-      lon = c(-84.3963, -71.0621, -73.9754, -80.8392, -87.6742, -81.6882, -96.8103, -105.0077, -83.0551, -122.3877, -95.3621, -86.1555, -118.2673, -118.2673, -90.0505, -80.1870, -87.9170, -93.2760, -90.0812, -73.9934, -97.5151, -81.3839, -75.1720, -112.0712, -122.6668, -121.4997, -98.4375, -79.3791, -111.9011, -77.0209, -84.4585, -87.6195, -72.0863, -97.1125, -86.1555, -115.1750, -118.2673, -93.2760, -73.9754, -112.0712, -122.3545, -76.9930)
-    )
-
-    # Group teams that share the same stadium together
-    stadiums <- stadiums %>%
-      group_by(lat, lon) %>%
-      summarise(team = paste(team, collapse = "<br>"))
-
-    # Create a basketball icon
-    basketball_icon <- makeIcon(
-      iconUrl = "https://emojiguide.org/images/emoji/6/jvgrthwxjlu6.png",
-      iconWidth = 28,
-      iconHeight = 28
-    )
-
-    # Create a leaflet map
-    leaflet(stadiums) %>%
-      addTiles() %>%
-      addMarkers(~lon, ~lat, icon = basketball_icon, popup = ~team)
-  })
-}
-```
-
-```{r}
-# Define UI for data tab
-data_ui <- tabPanel(
-  title = "Team Statistics",
-  sidebarLayout(
-    sidebarPanel(
-      pickerInput("team_nba", "Select NBA team:", choices = NULL, options = list(`actions-box` = TRUE), multiple = TRUE),
-      pickerInput("team_wnba", "Select WNBA team:", choices = NULL, options = list(`actions-box` = TRUE), multiple = TRUE),
-      pickerInput("year", "Select year:", choices = NULL, options = list(`actions-box` = TRUE), multiple = TRUE),
-      pickerInput("column1", "Select first column:", choices = c("players_active", "avg_age_team", "total_cap_all", "cap_space_all", "active"), options = list(`actions-box` = TRUE)),
-      pickerInput("column2", "Select second column:", choices = c("players_active", "avg_age_team", "total_cap_all", "cap_space_all", "active"), options = list(`actions-box` = TRUE))
-    ),
-    mainPanel(
-      fluidRow(
-        column(6, h3("NBA"), DT::dataTableOutput("table_nba")),
-        column(6, h3("WNBA"), DT::dataTableOutput("table_wnba"))
-      )
-    )
-  )
-)
-
-# Define server logic for data tab
-data_server <- function(input, output, session) {
-  # Update team and year choices
-  updatePickerInput(session, "team_nba", choices = unique(all_basketball$team_name[all_basketball$WM == 'M']))
-  updatePickerInput(session, "team_wnba", choices = unique(all_basketball$team_name[all_basketball$WM == 'W']))
-  updatePickerInput(session, "year", choices = unique(all_basketball$year))
-
-  output$table_nba <- DT::renderDataTable({
-    nba_data <- nba
-    if (!is.null(input$year)) {
-      nba_data <- nba_data[nba_data$year %in% input$year, ]
-    }
-    if (!is.null(input$team_nba)) {
-      nba_data <- nba_data[nba_data$team_name %in% input$team_nba, ]
-    }
-    nba_data <- nba_data[, c("year", "team_name", input$column1, input$column2)]
-    DT::datatable(nba_data)
-  })
-
-  output$table_wnba <- DT::renderDataTable({
-    wnba_data <- wnba
-    if (!is.null(input$year)) {
-      wnba_data <- wnba_data[wnba_data$year %in% input$year, ]
-    }
-    if (!is.null(input$team_wnba)) {
-      wnba_data <- wnba_data[wnba_data$team_name %in% input$team_wnba, ]
-    }
-    wnba_data <- wnba_data[, c("year", "team_name", input$column1, input$column2)]
-    DT::datatable(wnba_data)
-  })
-}
-```
-
-```{r}
-# Define UI
-ui <- navbarPage(
-  title = "WNBA and NBA Final",
-  latlon,
-  data_ui
-)
-
-# Define server logic
-server <- function(input, output, session) {
-  map_server(input, output)
-  data_server(input, output, session)
-}
-
-# Run the application 
-shinyApp(ui = ui, server = server)
-```
-
-
-### Maia's part
-
-```{r, echo= FALSE, output= FALSE, include= FALSE}
-library(tidyverse)
-library(stringr)
-library(rvest)
-library(httr)
-library(shiny)
-urlnew <-"https://www.espn.com/wnba/stats/player"
-
-robotstxt::paths_allowed(urlnew)   
-
-player <- read_html(urlnew) |>
-  html_nodes(".mr7 .AnchorLink") |>
-  html_text() 
-
-points <- read_html(urlnew) |>
-  html_nodes(".Table__TD:nth-child(4)") |>
-  html_text()
-
-games_played <- read_html(urlnew) |>
-  html_nodes(".Table__Scroller .Table__TD:nth-child(2)") |>
-  html_text() 
-
-rank <- read_html(urlnew) |>
-  html_nodes(".Table--fixed-left .Table__TH:nth-child(1) div , .Table--fixed-left .Table__TD:nth-child(1)") |>
-  html_text() |>
-  tail(n=50)
-
-position <- read_html(urlnew) |>
-  html_nodes(".position") |>
-  html_text()|>
-  head(n=50)
-
-team <- read_html(urlnew) |>
-  html_nodes(".athleteCell__teamAbbrev") |>
-  html_text()|>
-  head(n=50)
-
-primarydata <- tibble(player, points, games_played, position, rank, team) |>
-  print(n= Inf)
-
-
-
+Inputs {.sidebar}
+-------------------------
+```{r, include=FALSE, message=FALSE}
 
 url <- "https://www.espn.com/wnba/team/roster/_/name/chi/chicago-sky"
 robotstxt::paths_allowed(url)  
@@ -507,74 +198,482 @@ heightwsh <- read_html(urlwsh) |>
 nameconn <- append(nameconn, "Tiffany Hayes")
 ageconn <- append(ageconn, 33)
 heightconn <- append(heightconn, "5' 10\"")
-player <- c(nameatl,namechi,nameconn,namedal,nameind,namelv,namela,namemin,nameny,namephx, namesea,namewsh)
-age <- c(ageatl,agechi,ageconn,agedal,ageind,agelv,agela,agemin,ageny,agephx, agesea,agewsh)
-height <-c(heightatl,heightchi,heightconn,heightdal,heightind,heightlv,heightla,heightmin,heightny,heightphx, heightsea,heightwsh)
+playerfull <- c(nameatl,namechi,nameconn,namedal,nameind,namelv,namela,namemin,nameny,namephx, namesea,namewsh)
+agefull <- c(ageatl,agechi,ageconn,agedal,ageind,agelv,agela,agemin,ageny,agephx, agesea,agewsh)
+heightfull <-c(heightatl,heightchi,heightconn,heightdal,heightind,heightlv,heightla,heightmin,heightny,heightphx, heightsea,heightwsh) 
+```
 
-tibble(player,age,height) |>
-  print(n=Inf) 
+```{r, include=FALSE, message=FALSE}
+scrape_teamdata <- function(year){
+  urlteam <-str_c("https://www.espn.com/wnba/standings/_/season/",year, sep = "")
 
-dataage <- tibble(player,age,height) |>
-  filter(player!="Desi-Rae Young") |>
-  mutate(age=(as.double(age)-1)) |>
-  print(n=Inf) 
+robotstxt::paths_allowed(urlteam)  
 
-primary_data1 <- left_join(primarydata, dataage, 
-                           by = join_by(player== player)) |>
-  mutate(height= str_replace(height, '"', "")) |>
-  mutate(height= str_replace(height, "'", "")) |>
-  separate(height, c("feet", "inches"), " ") |>
+teamm <- read_html(urlteam) |>
+  html_nodes(".hide-mobile .AnchorLink") |>
+  html_text()
+
+wins <- read_html(urlteam) |>
+  html_nodes(".Table__TD:nth-child(1) .stat-cell") |>
+  html_text()
+wins
+
+losses <- read_html(urlteam) |>
+  html_nodes(".Table__TD:nth-child(2) .stat-cell") |>
+  html_text()
+
+percent_won <- read_html(urlteam) |>
+  html_nodes(".Table__TD:nth-child(3) .stat-cell") |>
+  html_text()
+
+home_record <- read_html(urlteam) |>
+  html_nodes(".Table__TD:nth-child(5) .stat-cell") |>
+  html_text()
+
+away_record <- read_html(urlteam) |>
+  html_nodes(".Table__TD:nth-child(6) .stat-cell") |>
+  html_text()
+
+conf_record <- read_html(urlteam) |>
+  html_nodes(".Table__TD:nth-child(7) .stat-cell") |>
+  html_text()
+
+points_per_game <- read_html(urlteam) |>
+  html_nodes(".Table__TD:nth-child(8) .stat-cell") |>
+  html_text()
+
+tibble(teamm, wins, losses, percent_won, home_record, away_record, conf_record, points_per_game) |>
+  mutate(wins=as.double(wins), losses= as.double(losses), points_per_game= as.double(points_per_game), percent_won= as.double(percent_won)) |>
+  mutate(year = year, team= teamm) |>
+  select(-teamm)
+}
+
+
+scrape_teamdata(2023)
+
+
+teamstatdata <- bind_rows(scrape_teamdata(2016),
+          scrape_teamdata(2017),
+          scrape_teamdata(2018), 
+          scrape_teamdata(2019), 
+          scrape_teamdata(2020), 
+          scrape_teamdata(2021), 
+          scrape_teamdata(2022), 
+          scrape_teamdata(2023))
+
+teamstatdata |>
+  count(year) 
+
+
+scrape_playerdata <- function(year){
+  urlplayer <-str_c("https://www.espn.com/wnba/stats/player/_/season/",year,"/seasontype/2", sep = "")
+
+robotstxt::paths_allowed(urlplayer)  
+
+playeryear <- read_html(urlplayer) |>
+  html_nodes(".mr7 .AnchorLink") |>
+  html_text() 
+
+pointsyear <- read_html(urlplayer) |>
+  html_nodes(".Table__TD:nth-child(4)") |>
+  html_text()
+
+games_playedyear <- read_html(urlplayer) |>
+  html_nodes(".Table__Scroller .Table__TD:nth-child(2)") |>
+  html_text() 
+
+rankyear <- read_html(urlplayer) |>
+  html_nodes(".Table--fixed-left .Table__TH:nth-child(1) div , .Table--fixed-left .Table__TD:nth-child(1)") |>
+  html_text() |>
+  tail(n=50)
+
+positionyear <- read_html(urlplayer) |>
+  html_nodes(".position") |>
+  html_text()|>
+  head(n=50)
+
+teamyear <- read_html(urlplayer) |>
+  html_nodes(".athleteCell__teamAbbrev") |>
+  html_text()|>
+  head(n=50)
+
+primary_data <- tibble(playeryear, pointsyear, games_playedyear, rankyear, positionyear, teamyear)
+
+dataage <- tibble(playerfull,agefull,heightfull) |>
+  mutate(agefull=(as.double(agefull)-(2024-year)))
+
+left_join(primary_data, dataage, 
+                           by = join_by(playeryear== playerfull)) |>
+  mutate(heightfull= str_replace(heightfull, '"', "")) |>
+  mutate(heightfull= str_replace(heightfull, "'", "")) |>
+  separate(heightfull, c("feet", "inches"), " ") |>
   mutate(feet= as.double(feet), inches= as.double(inches)) |>
-  print(n=Inf) 
-
-primary_data1|>
-  ggplot(aes(x= age, y= team)) +
-  geom_boxplot()
-
-primary_data1 |>
-  ggplot(aes(x= age)) +
-  geom_boxplot()
-
-primary_data1 <- primary_data1 |>
   mutate(feet_in_inches= feet*12, inches_in_feet= inches/12) |>
   mutate(height_in = feet_in_inches+inches, 
          height_ft= feet+inches_in_feet) |>
-  select(-feet, -inches, -feet_in_inches, -inches_in_feet)
+  select(-feet, -inches, -feet_in_inches, -inches_in_feet) |>
+  mutate(year=year)
+}
+
+
+scrape_playerdata(2023)
+
+
+playerstatdata <- bind_rows(
+          scrape_playerdata(2018), 
+          scrape_playerdata(2019), 
+          scrape_playerdata(2020), 
+          scrape_playerdata(2021), 
+          scrape_playerdata(2022), 
+          scrape_playerdata(2023))
+
+playerstatdata |>
+  count(year) 
 ```
 
 ```{r, echo= FALSE}
 inputPanel(
-      selectInput(inputId = "categ",
-                  label = h3("Boxplot categories"),
-                  choices = c("Games Played" = "games_played", 
-                              "Position" = "position", 
-                              "Team" = "team"),
-                  selected = "Team")
+      selectInput("y", label= "y-axis variable",
+                  choices = c("Games Played" = "games_playedyear", 
+                              "Position" = "positionyear", 
+                              "Team" = "teamyear"),
+                  selected = "teamyear"),
+      selectInput("x", label = "year",
+                  choices = c("2018" = "2018", 
+                              "2019" = "2019", 
+                              "2020" = "2020", 
+                              "2021"= "2021", 
+                              "2022"= "2022", 
+                              "2023"= "2023"),
+                  selected = "2023")
 )
 
-renderPlot({
- primary_data1 |> 
-    select(input$categ, "age") |>
-    ggplot(aes(x=.data[[input$categ]], y= age)) +
-    geom_boxplot() +
-    coord_flip()
-  }) 
 
 inputPanel(
-      selectInput(inputId = "categheight",
-                  label = h3("Boxplot categories"),
+      selectInput("y2", label = "height response variable",
                   choices = c("Games Played" = "games_played", 
                               "Position" = "position", 
                               "Team" = "team"),
-                  selected = "Team")
+                  selected = "team")
 )
 
-renderPlot({
- primary_data1 |> 
-    select(input$categheight, "height_in") |>
-    ggplot(aes(x=.data[[input$categheight]], y= height_in)) +
-    geom_boxplot() +
-    coord_flip()
-  }) 
 ```
+
+
+Column 
+-------------------------
+
+```{r, echo= FALSE}
+renderPlot({
+ playerstatdata |> 
+    filter(year %in% c(input$x)) |>
+    ggplot(aes(x="agefull", y= input$y)) +
+    geom_boxplot()
+  }) 
+
+#renderPlot({
+# playerstatdata |> 
+#    select(input$categheight, "height_in") |>
+#    ggplot(aes(x=.data[[input$categheight]], y= height_in)) +
+#    geom_boxplot() +
+#    coord_flip()
+#  }) 
+```
+
+Everything else
+==========================
+
+
+Inputs {.sidebar}
+-------------------------
+
+```{r, include= FALSE, message=FALSE}
+# NBA Data
+scrape_nbadata <- function(start_year){
+  url <-str_c("https://www.spotrac.com/nba/cap/_/year/", start_year, "/sort/cap_maximum_space", sep = "")
+
+  nba <- read_html(url)
+
+  tables <- html_nodes(nba, css = "table") 
+
+  nba_data <- html_table(tables, header = TRUE, fill = TRUE)[[1]] 
+
+  # Initialize year column
+  nba_data$year <- NA
+
+  # Initialize year and counter
+  year <- start_year
+  counter <- 0
+
+  # Loop over rows
+  for(i in seq_len(nrow(nba_data))) {
+    # If the next rank is 1 and is not NA, increment the counter
+    if(i < nrow(nba_data) && !is.na(nba_data$Rank[i+1]) && nba_data$Rank[i+1] == 1) {
+      counter <- counter + 1
+    }
+    # Calculate the year based on the counter
+    nba_data$year[i] <- start_year + counter
+  }
+
+  # Remove rows with "Totals" or "Averages"
+  nba_data <- nba_data[!rowSums(sapply(nba_data, function(x) grepl("Totals|Averages", x))), ]
+
+  nba_data <- nba_data %>%
+    mutate(Team = str_sub(Team, start = 1, end = 3))
+  return(nba_data)
+}
+
+scrape_nbadata(2023)
+
+# Scrape data for all years
+nba <- bind_rows(scrape_nbadata(2017),
+          scrape_nbadata(2018),
+          scrape_nbadata(2019),
+          scrape_nbadata(2020),
+          scrape_nbadata(2021),
+          scrape_nbadata(2022),
+          scrape_nbadata(2023))
+
+# Rename columns
+colnames(nba)[1] <- "rank"
+colnames(nba)[2] <- "team"
+colnames(nba)[4] <- "players_active"
+colnames(nba)[5] <- "avg_age_team"
+colnames(nba)[6] <- "total_cap_all"
+colnames(nba)[7] <- "cap_space_all"
+colnames(nba)[9] <- "active"
+
+# Select columns and add new column
+nba <- nba |>
+  select (year, rank, team, players_active, avg_age_team, total_cap_all, cap_space_all, active) |>
+  mutate(WM = "M")
+
+nba
+```
+
+```{r, include=FALSE, message=FALSE}
+# Create a data frame with team abbreviations, full names, and cities
+nba_teams <- tibble(
+  team = c("BOS", "BKN", "NYK", "PHI", "TOR", "CHI", "CLE", "DET", "IND", "MIL", "ATL", "CHA", "MIA", "ORL", "WAS", "DEN", "MIN", "OKC", "POR", "UTA", "GSW", "LAC", "LAL", "PHX", "SAC", "DAL", "HOU", "MEM", "NOP", "SAS"),
+  team_name = c("Boston Celtics", "Brooklyn Nets", "New York Knicks", "Philadelphia 76ers", "Toronto Raptors", "Chicago Bulls", "Cleveland Cavaliers", "Detroit Pistons", "Indiana Pacers", "Milwaukee Bucks", "Atlanta Hawks", "Charlotte Hornets", "Miami Heat", "Orlando Magic", "Washington Wizards", "Denver Nuggets", "Minnesota Timberwolves", "Oklahoma City Thunder", "Portland Trail Blazers", "Utah Jazz", "Golden State Warriors", "LA Clippers", "Los Angeles Lakers", "Phoenix Suns", "Sacramento Kings", "Dallas Mavericks", "Houston Rockets", "Memphis Grizzlies", "New Orleans Pelicans", "San Antonio Spurs"),
+  city = c("Boston", "Brooklyn", "New York", "Philadelphia", "Toronto", "Chicago", "Cleveland", "Detroit", "Indianapolis", "Milwaukee", "Atlanta", "Charlotte", "Miami", "Orlando", "Washington", "Denver", "Minneapolis", "Oklahoma City", "Portland", "Salt Lake City", "San Francisco", "Los Angeles", "Los Angeles", "Phoenix", "Sacramento", "Dallas", "Houston", "Memphis", "New Orleans", "San Antonio")
+)
+
+# Join NBA data with team names and cities
+nba <- nba %>%
+  left_join(nba_teams, by = "team")
+```
+
+
+```{r, include=FALSE, message=FALSE}
+# WNBA Data
+scrape_wnbadata <- function(start_year){
+  url <-str_c("https://www.spotrac.com/wnba/cap/_/year/", start_year, "/sort/cap_maximum_space", sep = "")
+
+  wnba <- read_html(url)
+
+  tables <- html_nodes(wnba, css = "table") 
+
+  wnba_data <- html_table(tables, header = TRUE, fill = TRUE)[[1]] 
+
+  # Initialize year column
+  wnba_data$year <- NA
+
+  # Initialize year and counter
+  year <- start_year
+  counter <- 0
+
+  # Loop over rows
+  for(i in seq_len(nrow(wnba_data))) {
+    # If the next rank is 1 and is not NA, increment the counter
+    if(i < nrow(wnba_data) && !is.na(wnba_data$Rank[i+1]) && wnba_data$Rank[i+1] == 1) {
+      counter <- counter + 1
+    }
+    # Calculate the year based on the counter
+    wnba_data$year[i] <- start_year + counter
+  }
+
+  # Remove rows with "Totals" or "Averages"
+  wnba_data <- wnba_data[!rowSums(sapply(wnba_data, function(x) grepl("Totals|Averages", x))), ]
+
+  wnba_data <- wnba_data %>%
+    mutate(Team = str_sub(Team, start = 1, end = 3)) %>%
+    mutate(Team = case_when(
+      Team == "NY\n" ~ "NYL",
+      Team == "LA\n" ~ "LAX",
+      Team == "LV\n" ~ "LVA",
+      TRUE ~ Team
+    ))
+
+  return(wnba_data)
+}
+
+scrape_wnbadata(2024)
+
+# Scrape data for all years
+wnba <- bind_rows(scrape_wnbadata(2018),
+          scrape_wnbadata(2019),
+          scrape_wnbadata(2020),
+          scrape_wnbadata(2021),
+          scrape_wnbadata(2022),
+          scrape_wnbadata(2023),
+          scrape_wnbadata(2024))
+
+# Rename columns
+colnames(wnba)[1] <- "rank"
+colnames(wnba)[2] <- "team"
+colnames(wnba)[3] <- "players_active"
+colnames(wnba)[4] <- "avg_age_team"
+colnames(wnba)[5] <- "total_cap_all"
+colnames(wnba)[6] <- "cap_space_all"
+colnames(wnba)[7] <- "active"
+
+# Select columns and add new column
+wnba <- wnba |>
+  select(year, rank, team, players_active, avg_age_team, total_cap_all, cap_space_all, active) |>
+  mutate(WM = "W")
+
+wnba
+```
+
+```{r, include=FALSE, message=FALSE}
+# Create a data frame with team abbreviations, full names, and cities
+wnba_teams <- tibble(
+  team = c("ATL", "CHI", "CON", "IND", "NYL", "WAS", "DAL", "LVA", "LAX", "MIN", "PHX", "SEA"),
+  team_name = c("Atlanta Dream", "Chicago Sky", "Connecticut Sun", "Indiana Fever", "New York Liberty", "Washington Mystics", "Dallas Wings", "Las Vegas Aces", "Los Angeles Sparks", "Minnesota Lynx", "Phoenix Mercury", "Seattle Storm"),
+  city = c("Atlanta", "Chicago", "Uncasville", "Indianapolis", "New York", "Washington", "Dallas", "Las Vegas", "Los Angeles", "Minneapolis", "Phoenix", "Seattle")
+)
+
+# Join WNBA data with team names and cities
+wnba <- wnba %>%
+  left_join(wnba_teams, by = "team")
+```
+
+
+```{r, include=FALSE, message=FALSE}
+#Combined data
+
+# For NBA data
+nba$players_active <- as.character(nba$players_active)
+
+nba$year <- nba$year + 1
+
+# For WNBA data
+wnba$players_active <- as.character(wnba$players_active)
+
+# Now bind the rows
+all_basketball <- bind_rows(wnba, nba)
+```
+
+ 
+```{r}
+# Generating Map
+# Define UI for map tab
+latlon <- tabPanel(
+  title = "Map",
+  leafletOutput("map")
+)
+
+# Define server logic for map tab
+map_server <- function(input, output) {
+  output$map <- renderLeaflet({
+    stadiums <- data.frame(
+      team = c("Atlanta Hawks", "Boston Celtics", "Brooklyn Nets", "Charlotte Hornets", "Chicago Bulls", "Cleveland Cavaliers", "Dallas Mavericks", "Denver Nuggets", "Detroit Pistons", "Golden State Warriors", "Houston Rockets", "Indiana Pacers", "Los Angeles Clippers", "Los Angeles Lakers", "Memphis Grizzlies", "Miami Heat", "Milwaukee Bucks", "Minnesota Timberwolves", "New Orleans Pelicans", "New York Knicks", "Oklahoma City Thunder", "Orlando Magic", "Philadelphia 76ers", "Phoenix Suns", "Portland Trail Blazers", "Sacramento Kings", "San Antonio Spurs", "Toronto Raptors", "Utah Jazz", "Washington Wizards", "Atlanta Dream", "Chicago Sky", "Connecticut Sun", "Dallas Wings", "Indiana Fever", "Las Vegas Aces", "Los Angeles Sparks", "Minnesota Lynx", "New York Liberty", "Phoenix Mercury", "Seattle Storm", "Washington Mystics"),
+      lat = c(33.7573, 42.3662, 40.6826, 35.2251, 41.8807, 41.4964, 32.7905, 39.7487, 42.3410, 37.7680, 29.7508, 39.7640, 34.0430, 34.0430, 35.1382, 25.7814, 43.0450, 44.9795, 29.9490, 40.7505, 35.4634, 28.5392, 39.9012, 33.4456, 45.5316, 38.5805, 29.4269, 43.6435, 40.7683, 38.8981, 33.6451, 41.8538, 41.4896, 32.7291, 39.7640, 36.0905, 34.0430, 44.9795, 40.6826, 33.4456, 47.6222, 38.8684),
+      lon = c(-84.3963, -71.0621, -73.9754, -80.8392, -87.6742, -81.6882, -96.8103, -105.0077, -83.0551, -122.3877, -95.3621, -86.1555, -118.2673, -118.2673, -90.0505, -80.1870, -87.9170, -93.2760, -90.0812, -73.9934, -97.5151, -81.3839, -75.1720, -112.0712, -122.6668, -121.4997, -98.4375, -79.3791, -111.9011, -77.0209, -84.4585, -87.6195, -72.0863, -97.1125, -86.1555, -115.1750, -118.2673, -93.2760, -73.9754, -112.0712, -122.3545, -76.9930)
+    )
+
+    # Group teams that share the same stadium together
+    stadiums <- stadiums %>%
+      group_by(lat, lon) %>%
+      summarise(team = paste(team, collapse = "<br>"))
+
+    # Create a basketball icon
+    basketball_icon <- makeIcon(
+      iconUrl = "https://emojiguide.org/images/emoji/6/jvgrthwxjlu6.png",
+      iconWidth = 28,
+      iconHeight = 28
+    )
+
+    # Create a leaflet map
+    leaflet(stadiums) %>%
+      addTiles() %>%
+      addMarkers(~lon, ~lat, icon = basketball_icon, popup = ~team)
+  })
+}
+```
+
+```{r}
+# Define UI for data tab
+data_ui <- tabPanel(
+  title = "Team Statistics",
+  sidebarLayout(
+    sidebarPanel(
+      pickerInput("team_nba", "Select NBA team:", choices = NULL, options = list(`actions-box` = TRUE), multiple = TRUE),
+      pickerInput("team_wnba", "Select WNBA team:", choices = NULL, options = list(`actions-box` = TRUE), multiple = TRUE),
+      pickerInput("year", "Select year:", choices = NULL, options = list(`actions-box` = TRUE), multiple = TRUE),
+      pickerInput("column1", "Select first column:", choices = c("players_active", "avg_age_team", "total_cap_all", "cap_space_all", "active"), options = list(`actions-box` = TRUE)),
+      pickerInput("column2", "Select second column:", choices = c("players_active", "avg_age_team", "total_cap_all", "cap_space_all", "active"), options = list(`actions-box` = TRUE))
+    ),
+    mainPanel(
+      fluidRow(
+        column(6, h3("NBA"), DT::dataTableOutput("table_nba")),
+        column(6, h3("WNBA"), DT::dataTableOutput("table_wnba"))
+      )
+    )
+  )
+)
+
+# Define server logic for data tab
+data_server <- function(input, output, session) {
+  # Update team and year choices
+  updatePickerInput(session, "team_nba", choices = unique(all_basketball$team_name[all_basketball$WM == 'M']))
+  updatePickerInput(session, "team_wnba", choices = unique(all_basketball$team_name[all_basketball$WM == 'W']))
+  updatePickerInput(session, "year", choices = unique(all_basketball$year))
+
+  output$table_nba <- DT::renderDataTable({
+    nba_data <- nba
+    if (!is.null(input$year)) {
+      nba_data <- nba_data[nba_data$year %in% input$year, ]
+    }
+    if (!is.null(input$team_nba)) {
+      nba_data <- nba_data[nba_data$team_name %in% input$team_nba, ]
+    }
+    nba_data <- nba_data[, c("year", "team_name", input$column1, input$column2)]
+    DT::datatable(nba_data)
+  })
+
+  output$table_wnba <- DT::renderDataTable({
+    wnba_data <- wnba
+    if (!is.null(input$year)) {
+      wnba_data <- wnba_data[wnba_data$year %in% input$year, ]
+    }
+    if (!is.null(input$team_wnba)) {
+      wnba_data <- wnba_data[wnba_data$team_name %in% input$team_wnba, ]
+    }
+    wnba_data <- wnba_data[, c("year", "team_name", input$column1, input$column2)]
+    DT::datatable(wnba_data)
+  })
+}
+```
+
+```{r}
+# Define UI
+ui <- navbarPage(
+  title = "WNBA and NBA Final",
+  latlon,
+  data_ui
+)
+
+# Define server logic
+server <- function(input, output, session) {
+  map_server(input, output)
+  data_server(input, output, session)
+}
+
+# Run the application 
+shinyApp(ui = ui, server = server)
+```
+
+
 

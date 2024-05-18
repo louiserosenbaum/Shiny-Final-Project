@@ -14,6 +14,184 @@ library(httr)
 library(shiny)
 ```
 
+### NBA Data
+
+```{r}
+scrape_nbadata <- function(start_year){
+  url <-str_c("https://www.spotrac.com/nba/cap/_/year/", start_year, "/sort/cap_maximum_space", sep = "")
+
+  nba <- read_html(url)
+
+  tables <- html_nodes(nba, css = "table") 
+
+  nba_data <- html_table(tables, header = TRUE, fill = TRUE)[[1]] 
+
+  # Initialize year column
+  nba_data$year <- NA
+
+  # Initialize year and counter
+  year <- start_year
+  counter <- 0
+
+  # Loop over rows
+  for(i in seq_len(nrow(nba_data))) {
+    # If the next rank is 1 and is not NA, increment the counter
+    if(i < nrow(nba_data) && !is.na(nba_data$Rank[i+1]) && nba_data$Rank[i+1] == 1) {
+      counter <- counter + 1
+    }
+    # Calculate the year based on the counter
+    nba_data$year[i] <- start_year + counter
+  }
+
+  # Remove rows with "Totals" or "Averages"
+  nba_data <- nba_data[!rowSums(sapply(nba_data, function(x) grepl("Totals|Averages", x))), ]
+
+  nba_data <- nba_data %>%
+    mutate(Team = str_sub(Team, start = 1, end = 3))
+  return(nba_data)
+}
+
+scrape_nbadata(2023)
+
+# Scrape data for all years
+nba <- bind_rows(scrape_nbadata(2017),
+          scrape_nbadata(2018),
+          scrape_nbadata(2019),
+          scrape_nbadata(2020),
+          scrape_nbadata(2021),
+          scrape_nbadata(2022),
+          scrape_nbadata(2023))
+
+# Rename columns
+colnames(nba)[1] <- "rank"
+colnames(nba)[2] <- "team"
+colnames(nba)[4] <- "players_active"
+colnames(nba)[5] <- "avg_age_team"
+colnames(nba)[6] <- "total_cap_all"
+colnames(nba)[7] <- "cap_space_all"
+colnames(nba)[9] <- "active"
+
+# Select columns and add new column
+nba <- nba |>
+  select (year, rank, team, players_active, avg_age_team, total_cap_all, cap_space_all, active) |>
+  mutate(WM = "M")
+```
+
+```{r}
+# Create a data frame with team abbreviations, full names, and cities
+nba_teams <- tibble(
+  team = c("BOS", "BKN", "NYK", "PHI", "TOR", "CHI", "CLE", "DET", "IND", "MIL", "ATL", "CHA", "MIA", "ORL", "WAS", "DEN", "MIN", "OKC", "POR", "UTA", "GSW", "LAC", "LAL", "PHX", "SAC", "DAL", "HOU", "MEM", "NOP", "SAS"),
+  team_name = c("Boston Celtics", "Brooklyn Nets", "New York Knicks", "Philadelphia 76ers", "Toronto Raptors", "Chicago Bulls", "Cleveland Cavaliers", "Detroit Pistons", "Indiana Pacers", "Milwaukee Bucks", "Atlanta Hawks", "Charlotte Hornets", "Miami Heat", "Orlando Magic", "Washington Wizards", "Denver Nuggets", "Minnesota Timberwolves", "Oklahoma City Thunder", "Portland Trail Blazers", "Utah Jazz", "Golden State Warriors", "LA Clippers", "Los Angeles Lakers", "Phoenix Suns", "Sacramento Kings", "Dallas Mavericks", "Houston Rockets", "Memphis Grizzlies", "New Orleans Pelicans", "San Antonio Spurs"),
+  city = c("Boston", "Brooklyn", "New York", "Philadelphia", "Toronto", "Chicago", "Cleveland", "Detroit", "Indianapolis", "Milwaukee", "Atlanta", "Charlotte", "Miami", "Orlando", "Washington", "Denver", "Minneapolis", "Oklahoma City", "Portland", "Salt Lake City", "San Francisco", "Los Angeles", "Los Angeles", "Phoenix", "Sacramento", "Dallas", "Houston", "Memphis", "New Orleans", "San Antonio")
+)
+
+# Join NBA data with team names and cities
+nba <- nba %>%
+  left_join(nba_teams, by = "team")
+```
+
+
+### WNBA Data
+
+```{r}
+scrape_wnbadata <- function(start_year){
+  url <-str_c("https://www.spotrac.com/wnba/cap/_/year/", start_year, "/sort/cap_maximum_space", sep = "")
+
+  wnba <- read_html(url)
+
+  tables <- html_nodes(wnba, css = "table") 
+
+  wnba_data <- html_table(tables, header = TRUE, fill = TRUE)[[1]] 
+
+  # Initialize year column
+  wnba_data$year <- NA
+
+  # Initialize year and counter
+  year <- start_year
+  counter <- 0
+
+  # Loop over rows
+  for(i in seq_len(nrow(wnba_data))) {
+    # If the next rank is 1 and is not NA, increment the counter
+    if(i < nrow(wnba_data) && !is.na(wnba_data$Rank[i+1]) && wnba_data$Rank[i+1] == 1) {
+      counter <- counter + 1
+    }
+    # Calculate the year based on the counter
+    wnba_data$year[i] <- start_year + counter
+  }
+
+  # Remove rows with "Totals" or "Averages"
+  wnba_data <- wnba_data[!rowSums(sapply(wnba_data, function(x) grepl("Totals|Averages", x))), ]
+
+  wnba_data <- wnba_data %>%
+    mutate(Team = str_sub(Team, start = 1, end = 3)) %>%
+    mutate(Team = case_when(
+      Team == "NY\n" ~ "NYL",
+      Team == "LA\n" ~ "LAX",
+      Team == "LV\n" ~ "LVA",
+      TRUE ~ Team
+    ))
+
+  return(wnba_data)
+}
+
+scrape_wnbadata(2024)
+
+# Scrape data for all years
+wnba <- bind_rows(scrape_wnbadata(2018),
+          scrape_wnbadata(2019),
+          scrape_wnbadata(2020),
+          scrape_wnbadata(2021),
+          scrape_wnbadata(2022),
+          scrape_wnbadata(2023),
+          scrape_wnbadata(2024))
+
+# Rename columns
+colnames(wnba)[1] <- "rank"
+colnames(wnba)[2] <- "team"
+colnames(wnba)[3] <- "players_active"
+colnames(wnba)[4] <- "avg_age_team"
+colnames(wnba)[5] <- "total_cap_all"
+colnames(wnba)[6] <- "cap_space_all"
+colnames(wnba)[7] <- "active"
+
+# Select columns and add new column
+wnba <- wnba |>
+  select(year, rank, team, players_active, avg_age_team, total_cap_all, cap_space_all, active) |>
+  mutate(WM = "W")
+
+wnba
+```
+
+```{r}
+# Create a data frame with team abbreviations, full names, and cities
+wnba_teams <- tibble(
+  team = c("ATL", "CHI", "CON", "IND", "NYL", "WAS", "DAL", "LVA", "LAX", "MIN", "PHX", "SEA"),
+  team_name = c("Atlanta Dream", "Chicago Sky", "Connecticut Sun", "Indiana Fever", "New York Liberty", "Washington Mystics", "Dallas Wings", "Las Vegas Aces", "Los Angeles Sparks", "Minnesota Lynx", "Phoenix Mercury", "Seattle Storm"),
+  city = c("Atlanta", "Chicago", "Uncasville", "Indianapolis", "New York", "Washington", "Dallas", "Las Vegas", "Los Angeles", "Minneapolis", "Phoenix", "Seattle")
+)
+
+# Join WNBA data with team names and cities
+wnba <- wnba %>%
+  left_join(wnba_teams, by = "team")
+```
+
+### Combined data
+
+```{r}
+# For NBA data
+nba$players_active <- as.character(nba$players_active)
+
+nba$year <- nba$year + 1
+
+# For WNBA data
+wnba$players_active <- as.character(wnba$players_active)
+
+# Now bind the rows
+all_basketball <- bind_rows(wnba, nba)
+```
+
+
 ```{r}
 
 url <- "https://www.espn.com/wnba/team/roster/_/name/chi/chicago-sky"
