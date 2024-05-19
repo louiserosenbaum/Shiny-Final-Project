@@ -11,8 +11,6 @@ output:
       navbar-bg: "#e9b0fc"
 ---
 
-### [Github Code](https://louiserosenbaum.github.io/shiny-final-project/)
-
 ```{r global, include= FALSE, message=FALSE}
 library(readr)
 library(dplyr)
@@ -83,6 +81,9 @@ The WNBA regular season consists of 40 games, which concludes in September, comp
 #### Data Source
 We drew data from these three websites:
 https://www.espn.com, https://hoopshype.com, and http://spotrac.com
+
+#### GitHub Code
+Our github code can be found here: https://louiserosenbaum.github.io/shiny-final-project/
 
 Demographics of the WNBA
 ==========================
@@ -724,7 +725,8 @@ all_basketball <- bind_rows(wnba, nba)
 # Define UI for map tab
 latlon <- tabPanel(
   title = "Map",
-  leafletOutput("map")
+  leafletOutput("map"),   
+  HTML("<p>This is a graph that indicates the location of the WNBA and NBA teams.</p>")
 )
 
 # Define server logic for map tab
@@ -772,7 +774,33 @@ data_ui <- tabPanel(
       fluidRow(
         column(6, h3("NBA"), DT::dataTableOutput("table_nba")),
         column(6, h3("WNBA"), DT::dataTableOutput("table_wnba"))
-      )
+      ), 
+      HTML("<b>Explanation of Dataset:</b>
+           <p>The columns in the dataset represent the following:
+           <ul>
+           <li>rank: The ranking of the team based on specific criteria (e.g., performance, financials).</li>
+           <li>team: The name of the team. </li>
+           <li>players_active: The number of active players on the team. </li>
+           <li>avg_age_team: The average age of players on the team. </li>
+           <li>total_cap_all: The total capital for the team, which is the sum of the team's shareholders' equity and all interest-bearing debt. </li>
+           <li>cap_space_all: The available cap space, or the amount of money the team can spend on player salaries for a given season. </li>
+           <li>active: The active capital, which refers to the league's investments in strategic areas such as marketing, digital transformation, globalization, and fan engagement. </li>
+           </ul>
+           
+How is Rank Measured?
+<ul>
+<li> The rank for WNBA teams is measured based on their performance and financial statistics. However, there are inaccuracies in the number of active players reported for 2018. The NBA has had a longer history of reporting and comparing these statistics, leading to a more robust dataset. The WNBA, still lesser-known, has lower ticket sales partly due to this lack of awareness. </li>
+</ul>
+
+
+Explanation of Columns
+<ul>
+<li> total_cap_all: Total capital is the sum of a company's shareholders' equity and all interest-bearing debt for the NBA and WNBA. Shareholders' equity includes common stock, preferred stock, and minority interest. The debt-to-capital ratio helps investors and analysts understand a company's financial structure and investment risk. A higher debt-to-capital ratio usually indicates higher risk. </li>
+
+<li> cap_space_all: Cap space in the WNBA and NBA refers to the amount of money that teams can spend on player salaries for a given season. The NBA salary cap limits how much money teams can pay their players, typically based on a percentage of the league's overall revenue from the previous season. This aims to maintain competitive balance so that teams in big markets and with wealthy owners cannot monopolize all the top players. </li>
+
+<li> active: Active capital in the WNBA refers to the league's investments in strategic areas such as marketing, digital transformation, globalization, and fan engagement. In 2022, the WNBA raised $75 million in venture capital, which has been used to support these initiatives. According to the WNBA's commissioner, Cathy Engelbert, the league aims to significantly increase its revenue over the coming years, although it will take time to see the full impact of these investments.</li>
+</ul></p>") ,
     )
   )
 )
