@@ -32,6 +32,8 @@ About
 Column {data-width = 400}
 -------------------------
 
+#### Introduction
+
 For our final project, we aimed to scrape data from the WNBA to uncover insights into the statistics behind women's basketball. Using the skills and tools we have acquired in Data Science 2, we collected data on various aspects of the WNBA in 2023. Our analysis includes a comparison of games played, player positions, teams, and the relationship between player height and age.
 
 Additionally, we incorporated a comparative analysis with the NBA from 2018 to 2024. This comparison examines metrics such as the number of active players, average age, total capital, team spending limits, and current expenditure on players. We utilized multiple data sources to ensure a comprehensive analysis, scraping data from various websites, player profiles, and financial reports.
@@ -40,6 +42,37 @@ Through this project, we aim to highlight key statistical differences and simila
 
 We hope you find our exploration of these sports statistics both informative and engaging, shedding light on the dynamics of professional basketball across genders.
 
+#### Team Abbreviations
+ ATL= Atlanta Dream
+
+ CHI= Chicago Sky
+
+ CONN= Connecticut Sun
+
+ DAL= Dallas Wings
+
+ IND= Indiana Fever
+
+ LA= Los Angeles Sparks
+
+ LV= Las Vegas Aces
+
+ MIN= Minnesota Lynx
+
+ NY= New York Liberty
+
+ PHX= Phoenix Mercury
+
+ SEA= Seattle Storm
+
+ WSH= Washingtion Mystics
+
+#### Data Source
+We drew data from these three websites:
+https://www.espn.com, https://hoopshype.com, and http://spotrac.com
+
+Column
+-------------------------
 ```{r}
 library(leaflet)
 library(dplyr)
@@ -73,17 +106,13 @@ leaflet(wnba_stadiums) %>%
   addMarkers(~lon, ~lat, icon = basketball_icon, popup = ~team)
 ```
 
-
 #### Background Information
 
 The WNBA regular season consists of 40 games, which concludes in September, compared to the NBA's 82-game regular season. The NBA season starts on Tuesday, October 24, while the WNBA season begins in May, coinciding with the NBA playoffs. The WNBA also uses a slightly smaller ball, measuring 28.5 inches in circumference, compared to the NBA's 29.5-inch ball. Additionally, the style of play differs significantly between the two leagues, with the WNBA often emphasizing teamwork, fundamentals, and strategic play, while the NBA is known for its fast pace, athleticism, and individual star power.
 
-#### Data Source
-We drew data from these three websites:
-https://www.espn.com, https://hoopshype.com, and http://spotrac.com
-
 #### GitHub Code
-Our github code can be found here: https://louiserosenbaum.github.io/shiny-final-project/
+Our github code can be found here: https://github.com/louiserosenbaum/Shiny-final-project/
+
 
 Demographics of the WNBA
 ==========================
@@ -864,25 +893,31 @@ Our final project, titled "WNBA and NBA Final," provided an in-depth analysis of
 Player Demographics:
 
 + We examined the demographics of WNBA players, focusing on age, height, and position. Our analysis revealed that younger players often occupy forward positions, while no significant relationships were found between age, height, and other statistics.
-The interactive dashboard enabled users to filter data by year and various statistical metrics, providing a clear visual representation of the relationships between these demographics and player performance.
+
++ The interactive dashboard enabled users to filter data by year and various statistical metrics, providing a clear visual representation of the relationships between these demographics and player performance.
 Team Performance:
 
 + Our analysis of team statistics over time showed fluctuations in team performance, particularly in the number of wins and losses. Notably, the 2020 season saw a significant drop in the number of games due to external factors, impacting team performance metrics.
 The interactive plots allowed users to explore how different teams performed each year, highlighting trends and changes in performance over time.
 
 Comparison Between WNBA and NBA:
+
 + By comparing the WNBA and NBA data, we uncovered key differences and similarities between the leagues. For instance, the NBA generally has higher financial expenditures and a larger number of active players due to its longer season and greater commercial reach.
 
 + Our analysis highlighted the differences in playing style and strategic focus between the two leagues, emphasizing the WNBA's emphasis on teamwork and fundamentals compared to the NBA's fast-paced, star-driven gameplay.
 
 Geographical Distribution:
+
 + Using Leaflet maps, we visualized the geographical distribution of WNBA and NBA teams. This provided a spatial perspective on where teams are located across the United States, offering insights into regional representation in professional basketball.
 
 #### Future Directions
 This project serves as a foundation for further exploration into the dynamics of professional basketball. Potential future directions could include:
-+Analyzing the impact of external factors such as injuries, trades, and draft picks on team performance and player statistics.
-+Expanding the scope to include international leagues and their comparison with the WNBA and NBA.
-+Incorporating advanced statistical models and machine learning techniques to predict player and team performance based on historical data.
+
++ Analyzing the impact of external factors such as injuries, trades, and draft picks on team performance and player statistics.
+
++ Expanding the scope to include international leagues and their comparison with the WNBA and NBA.
+
++ Incorporating advanced statistical models and machine learning techniques to predict player and team performance based on historical data.
 
 #### Conclusion
 Through our comprehensive analysis and interactive visualizations, we have provided valuable insights into the world of professional basketball. Our project not only highlights the statistical differences and similarities between the WNBA and NBA but also underscores the importance of data-driven analysis in understanding and appreciating the complexities of these sports. We hope our work inspires further research and exploration into the fascinating world of basketball statistics.
